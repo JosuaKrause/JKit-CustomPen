@@ -10,20 +10,21 @@ import java.awt.geom.GeneralPath;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 
+import jkit.pen.AbstractShapeDrawer;
 import jkit.pen.CirclePen;
 import jkit.pen.FacingTrianglePen;
-import jkit.pen.ShapeDrawer;
+import jkit.pen.PenShapeDrawer;
 
 public class Test {
 
 	private static JFrame jFrame;
 	private static Shape shape;
-	private static ShapeDrawer shapeDrawer;
+	private static AbstractShapeDrawer shapeDrawer;
 
 	public static void main(final String[] args) {
 		shape = createShape();
-		final boolean a = false;
-		shapeDrawer = new ShapeDrawer(a ? new FacingTrianglePen(Color.BLUE,
+		final boolean a = true;
+		shapeDrawer = new PenShapeDrawer(a ? new FacingTrianglePen(Color.BLUE,
 				30.0) : new CirclePen());
 		jFrame = new JFrame();
 		jFrame.add(new JComponent() {
@@ -56,6 +57,11 @@ public class Test {
 		path.quadTo(650.0, 250.0, 700.0, 300.0);
 		path.quadTo(700.0, 350.0, 650.0, 350.0);
 		path.closePath();
+		path.moveTo(200.0, 350.0);
+		path.quadTo(200.0, 300.0, 250.0, 300.0);
+		path.quadTo(300.0, 300.0, 300.0, 350.0);
+		path.quadTo(300.0, 400.0, 250.0, 400.0);
+		path.quadTo(200.0, 400.0, 200.0, 350.0);
 		return path;
 	}
 
