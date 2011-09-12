@@ -11,8 +11,8 @@ import javax.swing.JComponent;
 import javax.swing.JFrame;
 
 import jkit.pen.CirclePen;
+import jkit.pen.FacingTrianglePen;
 import jkit.pen.ShapeDrawer;
-
 
 public class Test {
 
@@ -22,7 +22,9 @@ public class Test {
 
 	public static void main(final String[] args) {
 		shape = createShape();
-		shapeDrawer = new ShapeDrawer(new CirclePen());
+		final boolean a = false;
+		shapeDrawer = new ShapeDrawer(a ? new FacingTrianglePen(Color.BLUE,
+				30.0) : new CirclePen());
 		jFrame = new JFrame();
 		jFrame.add(new JComponent() {
 
@@ -50,6 +52,10 @@ public class Test {
 		path.lineTo(150.0, 200.0);
 		path.quadTo(250.0, 250.0, 300.0, 150.0);
 		path.curveTo(400.0, 80.0, 450.0, 160.0, 500.0, 400.0);
+		path.moveTo(600.0, 300.0);
+		path.quadTo(650.0, 250.0, 700.0, 300.0);
+		path.quadTo(700.0, 350.0, 650.0, 350.0);
+		path.closePath();
 		return path;
 	}
 

@@ -30,8 +30,7 @@ public class ShapeDrawer {
 		while (!pi.isDone()) {
 			boolean move = false;
 			Point2D cur;
-			pi.currentSegment(coords);
-			switch (pi.getWindingRule()) {
+			switch (pi.currentSegment(coords)) {
 			case PathIterator.SEG_MOVETO:
 				cur = create(coords, 0);
 				curMoveTo = cur;
@@ -55,7 +54,10 @@ public class ShapeDrawer {
 			}
 			pi.next();
 			final boolean isLast = pi.isDone();
-			if (!move && last != null && cur != null) {
+			if (!move) {
+				if (cur == null || last == null) {
+					throw new IllegalStateException("malformed path iterator");
+				}
 				final Graphics2D seg = (Graphics2D) g.create();
 				final AffineTransform at = AffineTransform
 						.getTranslateInstance(last.getX(), last.getY());
@@ -74,14 +76,16 @@ public class ShapeDrawer {
 		double pos = 0.0;
 		final double end = Math.max(length - segLen * 0.5, 0.0);
 		while (pos <= end) {
+			final Graphics2D s = (Graphics2D) seg.create();
 			if (isFirst && pos == 0.0) {
-				pen.start(seg);
+				pen.start(s);
 			} else if (isLast && pos + segLen > end) {
-				pen.end(seg);
+				pen.end(s);
 			} else {
-				pen.draw(seg);
+				pen.draw(s);
 			}
 			pos += segLen;
+			s.dispose();
 			seg.translate(segLen, 0.0);
 		}
 	}

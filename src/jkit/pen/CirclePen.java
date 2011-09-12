@@ -8,6 +8,14 @@ public class CirclePen extends SimplePen {
 
 	private Ellipse2D circ;
 
+	public CirclePen() {
+		this(10.0);
+	}
+
+	public CirclePen(final double segLen) {
+		super(segLen);
+	}
+
 	@Override
 	public void setSegmentLength(final double segLen) {
 		super.setSegmentLength(segLen);
