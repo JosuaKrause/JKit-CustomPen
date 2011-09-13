@@ -11,6 +11,7 @@ import javax.swing.JComponent;
 import javax.swing.JFrame;
 
 import jkit.pen.AbstractShapeDrawer;
+import jkit.pen.ArrowPen;
 import jkit.pen.BloodTrailPen;
 import jkit.pen.CirclePen;
 import jkit.pen.FacingTrianglePen;
@@ -27,7 +28,7 @@ public class Test {
 	public static void main(final String[] args) {
 		shape = createShape();
 		Pen p;
-		final int a = 2;
+		final int a = 3;
 		switch (a) {
 		case 0:
 			p = new FacingTrianglePen(Color.BLUE, 30.0);
@@ -37,6 +38,9 @@ public class Test {
 			break;
 		case 2:
 			p = new PencilPen();
+			break;
+		case 3:
+			p = new ArrowPen();
 			break;
 		default:
 			p = new CirclePen();
@@ -51,8 +55,8 @@ public class Test {
 			@Override
 			protected void paintComponent(final Graphics gfx) {
 				final Graphics2D g = (Graphics2D) gfx.create();
-				g.setColor(Color.BLACK);
-				g.draw(shape);
+				// g.setColor(Color.BLACK);
+				// g.draw(shape);
 				shapeDrawer.draw(g, shape);
 				g.dispose();
 			}

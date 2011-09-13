@@ -11,6 +11,18 @@ public class PencilPen extends SimplePen {
 
 	private final Random rnd = new Random();
 
+	protected double metricShiftX = 0.5;
+
+	protected double metricShiftY = 0;
+
+	protected double metricSpreadX = 0.5;
+
+	protected double metricSpreadY = 0.125;
+
+	protected double metricMaxLength = 1.125;
+
+	protected int count = 25;
+
 	public PencilPen() {
 		this(10.0);
 	}
@@ -26,17 +38,44 @@ public class PencilPen extends SimplePen {
 		rnd.setSeed(s.getBounds2D().hashCode());
 	}
 
+	private double dx;
+
+	private double dy;
+
+	private double lx;
+
+	private double ly;
+
+	private double ll;
+
+	@Override
+	public void setSegmentLength(final double segmentLength) {
+		super.setSegmentLength(segmentLength);
+		lx = segmentLength * metricSpreadX;
+		ly = segmentLength * metricSpreadY;
+		dx = segmentLength * metricShiftX;
+		dy = segmentLength * metricShiftY;
+		ll = segmentLength * metricMaxLength;
+	}
+
+	protected final double getNextX() {
+		return rnd.nextGaussian() * lx + dx;
+	}
+
+	protected final double getNextY() {
+		return rnd.nextGaussian() * ly + dy;
+	}
+
+	protected final double getNextLine() {
+		return rnd.nextGaussian() * ll;
+	}
+
 	@Override
 	public void draw(final Graphics2D g) {
-		final double dx = segmentLength * 0.125;
-		final double dy = segmentLength * 0.125;
-		final double lx = segmentLength * 0.25;
-		final double ly = segmentLength * 0.125;
-		final double ll = segmentLength * 1.125;
-		for (int i = 0; i < 25; ++i) {
-			final double y = rnd.nextGaussian() * ly - dy;
-			final double x = rnd.nextGaussian() * lx - dx;
-			final double len = rnd.nextGaussian() * ll;
+		for (int i = 0; i < count; ++i) {
+			final double x = getNextX();
+			final double y = getNextY();
+			final double len = getNextLine();
 			g.draw(new Line2D.Double(x, y, x + len, y));
 		}
 	}

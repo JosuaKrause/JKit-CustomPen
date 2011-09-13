@@ -10,17 +10,25 @@ public abstract class SimplePen implements Pen {
 
 	protected Color color;
 
+	private boolean initialized;
+
 	public SimplePen(final Color color) {
 		this(color, 10.0);
 	}
 
 	public SimplePen(final Color color, final double segmentLength) {
 		this.color = color;
-		setSegmentLength(segmentLength);
+		this.segmentLength = segmentLength;
+		initialized = false;
 	}
 
 	@Override
 	public void prepare(final Graphics2D g, final Shape s) {
+		if (!initialized) {
+			setColor(color);
+			setSegmentLength(segmentLength);
+			initialized = true;
+		}
 		g.setColor(color);
 	}
 

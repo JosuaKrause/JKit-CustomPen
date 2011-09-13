@@ -14,6 +14,10 @@ public class FacingTrianglePen extends SimplePen {
 
 	private double distance;
 
+	public FacingTrianglePen() {
+		this(Color.BLACK, 30.0);
+	}
+
 	public FacingTrianglePen(final Color color, final double segLen) {
 		super(color, segLen);
 	}

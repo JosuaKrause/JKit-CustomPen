@@ -119,6 +119,9 @@ public class PenShapeDrawer extends AbstractShapeDrawer {
 		}
 
 		public void drawCurrentSegment(final Graphics2D gfx) {
+			if (dx == 0.0 && dy == 0.0) {
+				return;
+			}
 			final Graphics2D seg = (Graphics2D) gfx.create();
 			final AffineTransform at = AffineTransform.getTranslateInstance(x,
 					y);
