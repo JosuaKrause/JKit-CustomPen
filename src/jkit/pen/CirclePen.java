@@ -13,7 +13,7 @@ public class CirclePen extends SimplePen {
 	}
 
 	public CirclePen(final double segLen) {
-		super(segLen);
+		super(Color.YELLOW, segLen);
 	}
 
 	@Override
@@ -32,7 +32,6 @@ public class CirclePen extends SimplePen {
 
 	@Override
 	public void draw(final Graphics2D g) {
-		g.setColor(Color.YELLOW);
 		g.fill(circ);
 		g.setColor(Color.BLACK);
 		g.draw(circ);

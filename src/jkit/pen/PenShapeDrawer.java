@@ -154,6 +154,8 @@ public class PenShapeDrawer extends AbstractShapeDrawer {
 
 	@Override
 	public void draw(final Graphics gfx, final Shape outline) {
+		final Graphics2D g = (Graphics2D) gfx.create();
+		pen.prepare(g, outline);
 		final PathIterator pi = outline
 				.getPathIterator(null, Math.sqrt(segLen));
 		Point2D curMoveTo = null;
@@ -162,7 +164,7 @@ public class PenShapeDrawer extends AbstractShapeDrawer {
 		while (!pi.isDone()) {
 			cur = new Segment(pi, curMoveTo);
 			cur.setLast(last);
-			drawIfNotNull(gfx, last);
+			drawIfNotNull(g, last);
 			curMoveTo = cur.getCurMoveTo();
 			last = cur;
 			pi.next();
@@ -170,7 +172,8 @@ public class PenShapeDrawer extends AbstractShapeDrawer {
 		if (cur != null) {
 			cur.setIsLast(true);
 		}
-		drawIfNotNull(gfx, cur);
+		drawIfNotNull(g, cur);
+		g.dispose();
 	}
 
 	private void drawIfNotNull(final Graphics gfx, final Segment seg) {

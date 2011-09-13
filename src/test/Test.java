@@ -11,9 +11,12 @@ import javax.swing.JComponent;
 import javax.swing.JFrame;
 
 import jkit.pen.AbstractShapeDrawer;
+import jkit.pen.BloodTrailPen;
 import jkit.pen.CirclePen;
 import jkit.pen.FacingTrianglePen;
+import jkit.pen.Pen;
 import jkit.pen.PenShapeDrawer;
+import jkit.pen.PencilPen;
 
 public class Test {
 
@@ -23,9 +26,23 @@ public class Test {
 
 	public static void main(final String[] args) {
 		shape = createShape();
-		final boolean a = true;
-		shapeDrawer = new PenShapeDrawer(a ? new FacingTrianglePen(Color.BLUE,
-				30.0) : new CirclePen());
+		Pen p;
+		final int a = 2;
+		switch (a) {
+		case 0:
+			p = new FacingTrianglePen(Color.BLUE, 30.0);
+			break;
+		case 1:
+			p = new BloodTrailPen();
+			break;
+		case 2:
+			p = new PencilPen();
+			break;
+		default:
+			p = new CirclePen();
+			break;
+		}
+		shapeDrawer = new PenShapeDrawer(p);
 		jFrame = new JFrame();
 		jFrame.add(new JComponent() {
 

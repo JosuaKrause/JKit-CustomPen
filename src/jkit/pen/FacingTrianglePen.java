@@ -8,8 +8,6 @@ import java.awt.geom.GeneralPath;
 
 public class FacingTrianglePen extends SimplePen {
 
-	private final Color color;
-
 	private Shape triangle;
 
 	private double width;
@@ -17,8 +15,7 @@ public class FacingTrianglePen extends SimplePen {
 	private double distance;
 
 	public FacingTrianglePen(final Color color, final double segLen) {
-		super(segLen);
-		this.color = color;
+		super(color, segLen);
 	}
 
 	@Override
@@ -39,8 +36,8 @@ public class FacingTrianglePen extends SimplePen {
 	}
 
 	@Override
-	public void draw(final Graphics2D g) {
-		g.setColor(color);
+	public void draw(final Graphics2D gfx) {
+		final Graphics2D g = (Graphics2D) gfx.create();
 		g.translate(width, -distance);
 		g.fill(triangle);
 		g.translate(0, distance * 2.0);
@@ -48,6 +45,14 @@ public class FacingTrianglePen extends SimplePen {
 		at.translate(-width, 0.0);
 		g.transform(at);
 		g.fill(triangle);
+		g.dispose();
+		gfx.setColor(Color.BLACK);
+		gfx.translate(width, -distance);
+		gfx.draw(triangle);
+		gfx.translate(0, distance * 2.0);
+		gfx.transform(at);
+		gfx.draw(triangle);
+
 	}
 
 }
