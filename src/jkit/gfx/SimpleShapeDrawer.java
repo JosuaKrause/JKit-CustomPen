@@ -1,4 +1,4 @@
-package jkit.pen;
+package jkit.gfx;
 
 import java.awt.Graphics;
 import java.awt.Graphics2D;

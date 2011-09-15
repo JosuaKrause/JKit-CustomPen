@@ -10,14 +10,14 @@ import java.awt.geom.GeneralPath;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 
-import jkit.pen.AbstractShapeDrawer;
-import jkit.pen.ArrowPen;
-import jkit.pen.BloodTrailPen;
-import jkit.pen.CirclePen;
-import jkit.pen.FacingTrianglePen;
-import jkit.pen.Pen;
-import jkit.pen.PenShapeDrawer;
-import jkit.pen.PencilPen;
+import jkit.gfx.AbstractShapeDrawer;
+import jkit.gfx.PenShapeDrawer;
+import jkit.gfx.pen.ArrowPen;
+import jkit.gfx.pen.BloodTrailPen;
+import jkit.gfx.pen.CirclePen;
+import jkit.gfx.pen.FacingTrianglePen;
+import jkit.gfx.pen.Pen;
+import jkit.gfx.pen.PencilPen;
 
 public class Test {
 

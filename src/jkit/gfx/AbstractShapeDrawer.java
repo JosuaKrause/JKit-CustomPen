@@ -1,7 +1,9 @@
-package jkit.pen;
+package jkit.gfx;
 
 import java.awt.Graphics;
 import java.awt.Shape;
+
+import jkit.gfx.pen.Pen;
 
 public abstract class AbstractShapeDrawer {
 

@@ -1,4 +1,4 @@
-package jkit.pen;
+package jkit.gfx.pen;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
@@ -29,6 +29,10 @@ public class PencilPen extends SimplePen {
 
 	public PencilPen(final double segmentLength) {
 		super(new Color(0x40303030, true), segmentLength);
+	}
+
+	public PencilPen(final Color color, final double segmentLength) {
+		super(new Color(color.getRGB() | 0x40000000, true), segmentLength);
 	}
 
 	@Override
