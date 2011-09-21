@@ -2,6 +2,7 @@ package jkit.gfx.pen;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
+import java.awt.Rectangle;
 import java.awt.geom.Ellipse2D;
 
 public class CirclePen extends SimplePen {
@@ -20,6 +21,11 @@ public class CirclePen extends SimplePen {
 	public void setSegmentLength(final double segLen) {
 		super.setSegmentLength(segLen);
 		circ = new Ellipse2D.Double(0, -segLen * 0.25, segLen, segLen * 0.5);
+	}
+
+	@Override
+	public Rectangle getSegmentBoundingBox() {
+		return circ.getBounds();
 	}
 
 	@Override

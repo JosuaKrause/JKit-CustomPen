@@ -2,6 +2,7 @@ package jkit.gfx;
 
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.Rectangle;
 import java.awt.Shape;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.PathIterator;
@@ -134,19 +135,24 @@ public class PenShapeDrawer extends AbstractShapeDrawer {
 		}
 
 		private void drawSeg(final Graphics2D seg, final double length) {
+			final Rectangle rect = pen.getSegmentBoundingBox();
 			double pos = 0.0;
 			final double end = Math.max(length - segLen * 0.5, 0.0);
 			while (pos <= end) {
-				final Graphics2D s = (Graphics2D) seg.create();
-				if (isFirst && pos == 0.0) {
-					pen.start(s);
-				} else if (isLast && pos + segLen > end) {
-					pen.end(s);
-				} else {
-					pen.draw(s);
+				final boolean visible = seg.hitClip(rect.x, rect.y, rect.width,
+						rect.height);
+				if (visible) {
+					final Graphics2D s = (Graphics2D) seg.create();
+					if (isFirst && pos == 0.0) {
+						pen.start(s);
+					} else if (isLast && pos + segLen > end) {
+						pen.end(s);
+					} else {
+						pen.draw(s);
+					}
+					s.dispose();
 				}
 				pos += segLen;
-				s.dispose();
 				seg.translate(segLen, 0.0);
 			}
 		}

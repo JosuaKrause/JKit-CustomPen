@@ -1,6 +1,7 @@
 package jkit.gfx.pen;
 
 import java.awt.Graphics2D;
+import java.awt.Rectangle;
 import java.awt.Shape;
 
 public interface Pen {
@@ -12,6 +13,8 @@ public interface Pen {
 	void draw(Graphics2D g);
 
 	void end(Graphics2D g);
+
+	Rectangle getSegmentBoundingBox();
 
 	double segmentLength();
 

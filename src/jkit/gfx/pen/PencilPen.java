@@ -3,6 +3,7 @@ package jkit.gfx.pen;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
+import java.awt.Rectangle;
 import java.awt.Shape;
 import java.awt.geom.Line2D;
 import java.util.Random;
@@ -60,6 +61,13 @@ public class PencilPen extends SimplePen {
 		dx = segmentLength * metricShiftX;
 		dy = segmentLength * metricShiftY;
 		ll = segmentLength * metricMaxLength;
+	}
+
+	private Rectangle rect;
+
+	@Override
+	public Rectangle getSegmentBoundingBox() {
+		return rect;
 	}
 
 	protected final double getNextX() {
