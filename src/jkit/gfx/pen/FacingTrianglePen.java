@@ -2,9 +2,11 @@ package jkit.gfx.pen;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
+import java.awt.Rectangle;
 import java.awt.Shape;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.GeneralPath;
+import java.awt.geom.Rectangle2D;
 
 public class FacingTrianglePen extends SimplePen {
 
@@ -28,6 +30,15 @@ public class FacingTrianglePen extends SimplePen {
 		width = segLen * 0.5;
 		distance = segLen * 0.5;
 		triangle = createTriangleFor(width);
+		rect = new Rectangle2D.Double(0, -distance, width, 2 * distance)
+				.getBounds();
+	}
+
+	private Rectangle rect;
+
+	@Override
+	public Rectangle getSegmentBoundingBox() {
+		return rect;
 	}
 
 	private Shape createTriangleFor(final double width) {

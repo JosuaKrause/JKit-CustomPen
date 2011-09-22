@@ -6,6 +6,7 @@ import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.Shape;
 import java.awt.geom.Line2D;
+import java.awt.geom.Rectangle2D;
 import java.util.Random;
 
 public class PencilPen extends SimplePen {
@@ -61,6 +62,8 @@ public class PencilPen extends SimplePen {
 		dx = segmentLength * metricShiftX;
 		dy = segmentLength * metricShiftY;
 		ll = segmentLength * metricMaxLength;
+		rect = new Rectangle2D.Double(2 * lx + dx, -2 * ly + dy, 2 * ll, 4 * ly
+				+ dy).getBounds();
 	}
 
 	private Rectangle rect;
