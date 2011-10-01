@@ -30,7 +30,7 @@ public class FacingTrianglePen extends SimplePen {
 		triangle = createTriangleFor(width);
 	}
 
-	private Shape createTriangleFor(final double width) {
+	private static Shape createTriangleFor(final double width) {
 		final GeneralPath path = new GeneralPath();
 		path.moveTo(0.0, 0.0);
 		path.lineTo(width, 0.0);

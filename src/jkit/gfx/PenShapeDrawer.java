@@ -181,7 +181,7 @@ public class PenShapeDrawer extends AbstractShapeDrawer {
 		g.dispose();
 	}
 
-	private void drawIfNotNull(final Graphics gfx, final Segment seg) {
+	private static void drawIfNotNull(final Graphics gfx, final Segment seg) {
 		if (seg != null && !seg.isMove()) {
 			seg.drawCurrentSegment((Graphics2D) gfx);
 		}
