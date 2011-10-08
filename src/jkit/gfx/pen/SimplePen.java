@@ -29,7 +29,9 @@ public abstract class SimplePen extends PenAdapter {
             setSegmentLength(segmentLength);
             initialized = true;
         }
-        g.setColor(color);
+        if (color != null) {
+            g.setColor(color);
+        }
     }
 
     public void setColor(final Color color) {

@@ -13,9 +13,25 @@ public class CrayonPen extends SimplePen {
 
     private double thickness;
 
+    private double pressure;
+
     public CrayonPen(final Color color, final double thickness) {
+        this(color, thickness, 2.0);
+    }
+
+    public CrayonPen(final Color color, final double thickness,
+            final double pressure) {
         super(color);
         this.thickness = thickness;
+        this.pressure = pressure;
+    }
+
+    public void setPressure(final double pressure) {
+        this.pressure = pressure;
+    }
+
+    public double getPressure() {
+        return pressure;
     }
 
     public void setThickness(final double thickness) {
@@ -35,7 +51,7 @@ public class CrayonPen extends SimplePen {
 
     @Override
     public void draw(final Graphics2D g, final double rotation) {
-        final int t = (int) Math.round(thickness) * 2;
+        final int t = (int) Math.round(thickness * pressure);
         final double ht = thickness * 0.5;
         for (double pos = 0.0; pos <= segmentLength + 2.0; pos += 1.0) {
             for (int i = 0; i < t; ++i) {

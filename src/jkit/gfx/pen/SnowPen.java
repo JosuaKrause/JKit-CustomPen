@@ -6,7 +6,7 @@ import java.awt.Shape;
 
 import jkit.gfx.AbstractShapeDrawer;
 
-public class SnowPen extends PenAdapter {
+public class SnowPen extends DecoratorPen {
 
     private final AbstractShapeDrawer origin;
 
@@ -14,29 +14,38 @@ public class SnowPen extends PenAdapter {
 
     private final double maxSlope;
 
-    private final double segmentLength;
-
     public SnowPen(final AbstractShapeDrawer origin, final double thickness) {
-        this(origin, thickness, Math.PI / 6.0);
+        this(origin, thickness, 2.0);
     }
 
     public SnowPen(final AbstractShapeDrawer origin, final double thickness,
-            final double maxSlope, final boolean degrees) {
-        this(origin, thickness, degrees ? Math.toRadians(maxSlope) : maxSlope,
-                10.0);
+            final double pressure) {
+        this(origin, thickness, pressure, Math.PI / 6.0);
     }
 
     public SnowPen(final AbstractShapeDrawer origin, final double thickness,
-            final double maxSlope) {
-        this(origin, thickness, maxSlope, 10.0);
+            final double pressure, final double maxSlope, final boolean degrees) {
+        this(origin, thickness, pressure, degrees ? Math.toRadians(maxSlope)
+                : maxSlope, 10.0);
     }
 
     public SnowPen(final AbstractShapeDrawer origin, final double thickness,
-            final double maxSlope, final double segmentLength) {
+            final double pressure, final double maxSlope) {
+        this(origin, thickness, pressure, maxSlope, 10.0);
+    }
+
+    public SnowPen(final AbstractShapeDrawer origin, final double thickness,
+            final double pressure, final double maxSlope,
+            final double segmentLength) {
+        super(new CrayonPen(Color.WHITE, thickness, pressure));
         this.origin = origin;
-        crayon = new CrayonPen(Color.WHITE, thickness);
+        crayon = (CrayonPen) pen;
+        setSegmentLength(segmentLength);
         this.maxSlope = maxSlope;
-        this.segmentLength = segmentLength;
+    }
+
+    public void setSegmentLength(final double segmentLength) {
+        crayon.setSegmentLength(segmentLength);
     }
 
     public void setThickness(final double thickness) {
@@ -66,27 +75,22 @@ public class SnowPen extends PenAdapter {
     @Override
     public void start(final Graphics2D g, final double rotation) {
         if (isCorrectRotation(rotation)) {
-            crayon.start(g, rotation);
+            super.start(g, rotation);
         }
     }
 
     @Override
     public void end(final Graphics2D g, final double rotation) {
         if (isCorrectRotation(rotation)) {
-            crayon.end(g, rotation);
+            super.end(g, rotation);
         }
     }
 
     @Override
     public void draw(final Graphics2D g, final double rotation) {
         if (isCorrectRotation(rotation)) {
-            crayon.draw(g, rotation);
+            super.draw(g, rotation);
         }
-    }
-
-    @Override
-    public double segmentLength() {
-        return segmentLength;
     }
 
 }

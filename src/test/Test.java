@@ -16,7 +16,6 @@ import javax.swing.JFrame;
 import javax.swing.WindowConstants;
 
 import jkit.gfx.AbstractShapeDrawer;
-import jkit.gfx.PenShapeDrawer;
 import jkit.gfx.SimpleShapeDrawer;
 import jkit.gfx.pen.ArrowPen;
 import jkit.gfx.pen.BloodTrailPen;
@@ -47,7 +46,7 @@ public class Test {
 
             new SnowPen(
                     new SimpleShapeDrawer(new BasicStroke(5f), Color.BLACK),
-                    5.0, 45, true),
+                    5.0, 2.0, 45, true),
 
             new FacingTrianglePen(Color.BLUE, 30.0),
 
@@ -73,8 +72,7 @@ public class Test {
 
     public static final void setPen() {
         final Pen p = pens[curPen];
-        shapeDrawer = p != null ? new PenShapeDrawer(p)
-                : new SimpleShapeDrawer();
+        shapeDrawer = AbstractShapeDrawer.getShapeDrawerForPen(p);
     }
 
     public static void main(final String[] args) {
