@@ -1,5 +1,6 @@
 package test;
 
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
@@ -8,6 +9,7 @@ import java.awt.Shape;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.geom.GeneralPath;
+import java.awt.geom.Rectangle2D;
 
 import javax.swing.JComponent;
 import javax.swing.JFrame;
@@ -19,9 +21,11 @@ import jkit.gfx.SimpleShapeDrawer;
 import jkit.gfx.pen.ArrowPen;
 import jkit.gfx.pen.BloodTrailPen;
 import jkit.gfx.pen.CirclePen;
+import jkit.gfx.pen.CrayonPen;
 import jkit.gfx.pen.FacingTrianglePen;
 import jkit.gfx.pen.Pen;
 import jkit.gfx.pen.PencilPen;
+import jkit.gfx.pen.SnowPen;
 
 public class Test {
 
@@ -31,17 +35,39 @@ public class Test {
     private static int curPen = 0;
     private static Pen[] pens = new Pen[] {
 
+            null,
+
+            new PencilPen(),
+
+            new BloodTrailPen(),
+
+            new ArrowPen(),
+
+            new CrayonPen(Color.GREEN, 5.0),
+
+            new SnowPen(
+                    new SimpleShapeDrawer(new BasicStroke(5f), Color.BLACK),
+                    5.0, 45, true),
+
+            new FacingTrianglePen(Color.BLUE, 30.0),
+
+            new CirclePen(),
+
+    };
+
+    private static int curBg = 0;
+
+    private static Color[] bgs = new Color[] {
+
     null,
 
-    new PencilPen(),
+    Color.WHITE,
 
-    new BloodTrailPen(),
+    Color.BLACK,
 
-    new ArrowPen(),
+    Color.GREEN,
 
-    new FacingTrianglePen(Color.BLUE, 30.0),
-
-    new CirclePen(),
+    Color.RED,
 
     };
 
@@ -55,6 +81,7 @@ public class Test {
         setPen();
         shape = createShape();
         jFrame = new JFrame();
+        bgs[0] = jFrame.getBackground();
         jFrame.add(new JComponent() {
 
             private static final long serialVersionUID = 2257038010168418793L;
@@ -62,8 +89,11 @@ public class Test {
             @Override
             protected void paintComponent(final Graphics gfx) {
                 final Graphics2D g = (Graphics2D) gfx.create();
-                // g.setColor(Color.BLACK);
-                // g.draw(shape);
+                g.setColor(bgs[curBg]);
+                final Dimension dim = jFrame.getSize();
+                g.fill(new Rectangle2D.Double(0, 0, dim.getWidth(), dim
+                        .getHeight()));
+                g.setColor(Color.BLACK);
                 shapeDrawer.draw(g, shape);
                 g.dispose();
             }
@@ -73,11 +103,22 @@ public class Test {
 
             @Override
             public void mouseClicked(final MouseEvent e) {
-                ++curPen;
-                if (curPen >= pens.length) {
-                    curPen = 0;
+                switch (e.getButton()) {
+                case MouseEvent.BUTTON1:
+                    ++curPen;
+                    if (curPen >= pens.length) {
+                        curPen = 0;
+                    }
+                    setPen();
+                    break;
+                case MouseEvent.BUTTON3:
+                    ++curBg;
+                    if (curBg >= bgs.length) {
+                        curBg = 0;
+                    }
+                    jFrame.setBackground(bgs[curBg]);
+                    break;
                 }
-                setPen();
                 jFrame.repaint();
             }
 

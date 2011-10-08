@@ -4,7 +4,7 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Shape;
 
-public abstract class SimplePen implements Pen {
+public abstract class SimplePen extends PenAdapter {
 
     protected double segmentLength;
 
@@ -30,16 +30,6 @@ public abstract class SimplePen implements Pen {
             initialized = true;
         }
         g.setColor(color);
-    }
-
-    @Override
-    public void start(final Graphics2D g, final double rotation) {
-        draw(g, rotation);
-    }
-
-    @Override
-    public void end(final Graphics2D g, final double rotation) {
-        draw(g, rotation);
     }
 
     public void setColor(final Color color) {
