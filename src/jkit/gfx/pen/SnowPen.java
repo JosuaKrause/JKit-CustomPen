@@ -3,94 +3,121 @@ package jkit.gfx.pen;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Shape;
+import java.awt.geom.Rectangle2D;
 
 import jkit.gfx.AbstractShapeDrawer;
 
 public class SnowPen extends DecoratorPen {
 
-    private final AbstractShapeDrawer origin;
+	private final AbstractShapeDrawer origin;
 
-    private final CrayonPen crayon;
+	private final CrayonPen crayon;
 
-    private final double maxSlope;
+	private final double maxSlope;
 
-    public SnowPen(final AbstractShapeDrawer origin, final double thickness) {
-        this(origin, thickness, 2.0);
-    }
+	private double maxThickness;
 
-    public SnowPen(final AbstractShapeDrawer origin, final double thickness,
-            final double pressure) {
-        this(origin, thickness, pressure, Math.PI / 6.0);
-    }
+	public SnowPen(final AbstractShapeDrawer origin, final double thickness) {
+		this(origin, thickness, 2.0);
+	}
 
-    public SnowPen(final AbstractShapeDrawer origin, final double thickness,
-            final double pressure, final double maxSlope, final boolean degrees) {
-        this(origin, thickness, pressure, degrees ? Math.toRadians(maxSlope)
-                : maxSlope, 10.0);
-    }
+	public SnowPen(final AbstractShapeDrawer origin, final double thickness,
+			final double pressure) {
+		this(origin, thickness, pressure, Math.PI / 6.0);
+	}
 
-    public SnowPen(final AbstractShapeDrawer origin, final double thickness,
-            final double pressure, final double maxSlope) {
-        this(origin, thickness, pressure, maxSlope, 10.0);
-    }
+	public SnowPen(final AbstractShapeDrawer origin, final double thickness,
+			final double pressure, final double maxSlope, final boolean degrees) {
+		this(origin, thickness, pressure, degrees ? Math.toRadians(maxSlope)
+				: maxSlope, 10.0);
+	}
 
-    public SnowPen(final AbstractShapeDrawer origin, final double thickness,
-            final double pressure, final double maxSlope,
-            final double segmentLength) {
-        super(new CrayonPen(Color.WHITE, thickness, pressure));
-        this.origin = origin;
-        crayon = (CrayonPen) pen;
-        setSegmentLength(segmentLength);
-        this.maxSlope = maxSlope;
-    }
+	public SnowPen(final AbstractShapeDrawer origin, final double thickness,
+			final double pressure, final double maxSlope) {
+		this(origin, thickness, pressure, maxSlope, 10.0);
+	}
 
-    public void setSegmentLength(final double segmentLength) {
-        crayon.setSegmentLength(segmentLength);
-    }
+	public SnowPen(final AbstractShapeDrawer origin, final double thickness,
+			final double pressure, final double maxSlope,
+			final double segmentLength) {
+		super(new CrayonPen(Color.WHITE, thickness, pressure));
+		this.origin = origin;
+		crayon = (CrayonPen) pen;
+		setSegmentLength(segmentLength);
+		setThickness(thickness);
+		this.maxSlope = maxSlope;
+	}
 
-    public void setThickness(final double thickness) {
-        crayon.setThickness(thickness);
-    }
+	public void setSegmentLength(final double segmentLength) {
+		crayon.setSegmentLength(segmentLength);
+	}
 
-    public double getThickness() {
-        return crayon.getThickness();
-    }
+	public void setThickness(final double thickness) {
+		maxThickness = thickness;
+	}
 
-    @Override
-    public void prepare(final Graphics2D g, final Shape s) {
-        origin.draw(g, s);
-        g.translate(0.0, -getThickness() * 2.0 / 3.0);
-        crayon.prepare(g, s);
-    }
+	public double getThickness() {
+		return maxThickness;
+	}
 
-    private boolean isCorrectRotation(double rot) {
-        while (rot > Math.PI * 0.5) {
-            rot -= Math.PI;
-        }
-        rot = Math.abs(rot);
-        return rot <= maxSlope;
+	@Override
+	public void prepare(final Graphics2D g, final Shape s) {
+		origin.draw(g, s);
+		g.translate(0.0, -getThickness() * 2.0 / 3.0);
+		crayon.prepare(g, s);
+	}
 
-    }
+	private static final double MAX_SLOPE = Math.PI * 0.5;
 
-    @Override
-    public void start(final Graphics2D g, final double rotation) {
-        if (isCorrectRotation(rotation)) {
-            super.start(g, rotation);
-        }
-    }
+	private static final double SLOPE_STEP = MAX_SLOPE * 2;
 
-    @Override
-    public void end(final Graphics2D g, final double rotation) {
-        if (isCorrectRotation(rotation)) {
-            super.end(g, rotation);
-        }
-    }
+	private static double slope(double rot) {
+		while (Math.abs(rot) > MAX_SLOPE) {
+			rot -= SLOPE_STEP;
+		}
+		return Math.abs(rot);
+	}
 
-    @Override
-    public void draw(final Graphics2D g, final double rotation) {
-        if (isCorrectRotation(rotation)) {
-            super.draw(g, rotation);
-        }
-    }
+	private void adjustThickness(final double rot) {
+		final double factor = slope(rot) / MAX_SLOPE;
+		crayon.setThickness(maxThickness * factor);
+	}
+
+	private boolean isCorrectRotation(final double rot) {
+		return slope(rot) <= maxSlope;
+	}
+
+	@Override
+	public void start(final Graphics2D g, final double rotation) {
+		if (isCorrectRotation(rotation)) {
+			adjustThickness(rotation);
+			super.start(g, rotation);
+		}
+	}
+
+	@Override
+	public void end(final Graphics2D g, final double rotation) {
+		if (isCorrectRotation(rotation)) {
+			adjustThickness(rotation);
+			super.end(g, rotation);
+		}
+	}
+
+	@Override
+	public void draw(final Graphics2D g, final double rotation) {
+		if (isCorrectRotation(rotation)) {
+			adjustThickness(rotation);
+			super.draw(g, rotation);
+		}
+	}
+
+	@Override
+	public Rectangle2D getBoundingBox(final int type, final double rotation) {
+		if (isCorrectRotation(rotation)) {
+			adjustThickness(rotation);
+			return super.getBoundingBox(type, rotation);
+		}
+		return new Rectangle2D.Double();
+	}
 
 }

@@ -5,6 +5,7 @@ import java.awt.Graphics2D;
 import java.awt.Paint;
 import java.awt.Shape;
 import java.awt.Stroke;
+import java.awt.geom.Rectangle2D;
 
 public class SimpleShapeDrawer extends AbstractShapeDrawer {
 
@@ -32,6 +33,12 @@ public class SimpleShapeDrawer extends AbstractShapeDrawer {
 		}
 		g.draw(outline);
 		g.dispose();
+	}
+
+	@Override
+	public Rectangle2D getBounds(final Shape s) {
+		return (stroke != null ? stroke.createStrokedShape(s) : s)
+				.getBounds2D();
 	}
 
 }
