@@ -67,6 +67,11 @@ public class SnowPen extends DecoratorPen {
 		crayon.prepare(g, s);
 	}
 
+	@Override
+	public Rectangle2D getSpecialBounds(final Shape s) {
+		return origin.getBounds(s);
+	}
+
 	private static final double MAX_SLOPE = Math.PI * 0.5;
 
 	private static final double SLOPE_STEP = MAX_SLOPE * 2;
@@ -88,26 +93,26 @@ public class SnowPen extends DecoratorPen {
 	}
 
 	@Override
-	public void start(final Graphics2D g, final double rotation) {
+	public void start(final Graphics2D g, final int no, final double rotation) {
 		if (isCorrectRotation(rotation)) {
 			adjustThickness(rotation);
-			super.start(g, rotation);
+			super.start(g, no, rotation);
 		}
 	}
 
 	@Override
-	public void end(final Graphics2D g, final double rotation) {
+	public void end(final Graphics2D g, final int no, final double rotation) {
 		if (isCorrectRotation(rotation)) {
 			adjustThickness(rotation);
-			super.end(g, rotation);
+			super.end(g, no, rotation);
 		}
 	}
 
 	@Override
-	public void draw(final Graphics2D g, final double rotation) {
+	public void draw(final Graphics2D g, final int no, final double rotation) {
 		if (isCorrectRotation(rotation)) {
 			adjustThickness(rotation);
-			super.draw(g, rotation);
+			super.draw(g, no, rotation);
 		}
 	}
 

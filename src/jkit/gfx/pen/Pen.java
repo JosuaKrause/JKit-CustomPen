@@ -28,12 +28,14 @@ public interface Pen {
 	 * 
 	 * @param g
 	 *            The graphics to draw on.
+	 * @param no
+	 *            The number of the segment.
 	 * @param rotation
 	 *            The absolute rotation of the line segment.
 	 * 
 	 * @see #draw(Graphics2D, double)
 	 */
-	void start(Graphics2D g, double rotation);
+	void start(Graphics2D g, int no, double rotation);
 
 	/**
 	 * Draws one line segment of the length {@link #segmentLength()}. A shape is
@@ -43,10 +45,12 @@ public interface Pen {
 	 * 
 	 * @param g
 	 *            The graphics to draw on.
+	 * @param no
+	 *            The number of the segment.
 	 * @param rotation
 	 *            The absolute rotation of the line segment.
 	 */
-	void draw(Graphics2D g, double rotation);
+	void draw(Graphics2D g, int no, double rotation);
 
 	/**
 	 * Provides a special method to draw the end of a shape section. This method
@@ -57,12 +61,14 @@ public interface Pen {
 	 * 
 	 * @param g
 	 *            The graphics to draw on.
+	 * @param no
+	 *            The number of the segment.
 	 * @param rotation
 	 *            The absolute rotation of the line segment.
 	 * 
 	 * @see #draw(Graphics2D, double)
 	 */
-	void end(Graphics2D g, double rotation);
+	void end(Graphics2D g, int no, double rotation);
 
 	/**
 	 * The bounding box of the segment.
@@ -75,6 +81,17 @@ public interface Pen {
 	 * @return The bounding box of the segment.
 	 */
 	Rectangle2D getBoundingBox(int type, double rotation);
+
+	/**
+	 * Calculates a special bounding box for the complete shape. Generally, this
+	 * method should return <code>null</code>.
+	 * 
+	 * @param s
+	 *            The shape for the bounds.
+	 * @return <code>null</code> if this pen has no special bounding box or the
+	 *         special bounds.
+	 */
+	Rectangle2D getSpecialBounds(Shape s);
 
 	/**
 	 * @return The length of segments of this pen. The drawn shape is split into

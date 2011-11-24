@@ -24,7 +24,7 @@ public class CirclePen extends SimplePen {
 	}
 
 	@Override
-	public void start(final Graphics2D g, final double rotation) {
+	public void start(final Graphics2D g, final int no, final double rotation) {
 		g.setColor(Color.BLUE);
 		g.fill(circ);
 		g.setColor(Color.BLACK);
@@ -32,14 +32,14 @@ public class CirclePen extends SimplePen {
 	}
 
 	@Override
-	public void draw(final Graphics2D g, final double rotation) {
+	public void draw(final Graphics2D g, final int no, final double rotation) {
 		g.fill(circ);
 		g.setColor(Color.BLACK);
 		g.draw(circ);
 	}
 
 	@Override
-	public void end(final Graphics2D g, final double rotation) {
+	public void end(final Graphics2D g, final int no, final double rotation) {
 		g.setColor(Color.RED);
 		g.fill(circ);
 		g.setColor(Color.BLACK);

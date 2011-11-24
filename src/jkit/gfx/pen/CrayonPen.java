@@ -42,16 +42,19 @@ public class CrayonPen extends SimplePen {
 		return thickness;
 	}
 
+	private int seed;
+
 	@Override
 	public void prepare(final Graphics2D g, final Shape s) {
 		super.prepare(g, s);
 		g.setStroke(new BasicStroke(1f));
-		rnd.setSeed(s.getBounds2D().hashCode());
+		seed = s.getBounds2D().hashCode();
 		postPrepare(g);
 	}
 
 	@Override
-	public void draw(final Graphics2D g, final double rotation) {
+	public void draw(final Graphics2D g, final int no, final double rotation) {
+		rnd.setSeed(seed + no);
 		final int t = (int) Math.round(thickness * pressure);
 		final double ht = thickness * 0.5;
 		for (double pos = 0.0; pos <= segmentLength + 2.0; pos += 1.0) {

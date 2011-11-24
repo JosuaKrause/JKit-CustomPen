@@ -18,18 +18,18 @@ public abstract class DecoratorPen implements Pen {
 	}
 
 	@Override
-	public void start(final Graphics2D g, final double rotation) {
-		pen.start(g, rotation);
+	public void start(final Graphics2D g, final int no, final double rotation) {
+		pen.start(g, no, rotation);
 	}
 
 	@Override
-	public void draw(final Graphics2D g, final double rotation) {
-		pen.draw(g, rotation);
+	public void draw(final Graphics2D g, final int no, final double rotation) {
+		pen.draw(g, no, rotation);
 	}
 
 	@Override
-	public void end(final Graphics2D g, final double rotation) {
-		pen.end(g, rotation);
+	public void end(final Graphics2D g, final int no, final double rotation) {
+		pen.end(g, no, rotation);
 	}
 
 	@Override

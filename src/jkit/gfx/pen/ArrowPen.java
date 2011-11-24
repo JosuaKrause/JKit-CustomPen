@@ -15,7 +15,8 @@ public class ArrowPen extends PencilPen {
 	}
 
 	@Override
-	public void end(final Graphics2D g, final double rotation) {
+	public void end(final Graphics2D g, final int no, final double rotation) {
+		setSeed(no);
 		final double sl = segmentLength;
 		final double sl2 = sl * 0.15;
 		final double sl3 = sl * 0.50;

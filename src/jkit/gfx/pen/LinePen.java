@@ -38,7 +38,7 @@ public class LinePen extends SimplePen {
 	}
 
 	@Override
-	public void draw(final Graphics2D g, final double rotation) {
+	public void draw(final Graphics2D g, final int no, final double rotation) {
 		g.draw(new Line2D.Double(0, 0, segmentLength, 0));
 	}
 

@@ -41,7 +41,7 @@ public class FacingTrianglePen extends SimplePen {
 	}
 
 	@Override
-	public void draw(final Graphics2D gfx, final double rotation) {
+	public void draw(final Graphics2D gfx, final int no, final double rotation) {
 		final Graphics2D g = (Graphics2D) gfx.create();
 		g.translate(width, -distance);
 		g.fill(triangle);

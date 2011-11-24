@@ -12,6 +12,8 @@ public class PencilPen extends SimplePen {
 
 	private final Random rnd = new Random();
 
+	private int seed;
+
 	protected double metricShiftX = 0.5;
 
 	protected double metricShiftY = 0;
@@ -40,7 +42,7 @@ public class PencilPen extends SimplePen {
 	public void prepare(final Graphics2D g, final Shape s) {
 		super.prepare(g, s);
 		g.setStroke(new BasicStroke(.5f));
-		rnd.setSeed(s.getBounds2D().hashCode());
+		seed = s.getBounds2D().hashCode();
 		postPrepare(g);
 	}
 
@@ -102,8 +104,13 @@ public class PencilPen extends SimplePen {
 		return GAUSS_NULL * ll;
 	}
 
+	protected final void setSeed(final int no) {
+		rnd.setSeed(seed + no);
+	}
+
 	@Override
-	public void draw(final Graphics2D g, final double rotation) {
+	public void draw(final Graphics2D g, final int no, final double rotation) {
+		setSeed(no);
 		for (int i = 0; i < count; ++i) {
 			final double x = getNextX();
 			final double y = getNextY();

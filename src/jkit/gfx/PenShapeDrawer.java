@@ -121,9 +121,9 @@ public class PenShapeDrawer extends AbstractShapeDrawer {
 			return new Point2D.Double(coords[pos], coords[pos + 1]);
 		}
 
-		public void drawCurrentSegment(final Graphics2D gfx) {
+		public int drawCurrentSegment(final Graphics2D gfx, int no) {
 			if (dx == 0.0 && dy == 0.0) {
-				return;
+				return no;
 			}
 			final Graphics2D seg = (Graphics2D) gfx.create();
 			final AffineTransform at = AffineTransform.getTranslateInstance(x,
@@ -131,8 +131,20 @@ public class PenShapeDrawer extends AbstractShapeDrawer {
 			final double rot = getOrientation();
 			at.rotate(rot);
 			seg.transform(at);
-			drawSeg(seg, getLength(), rot);
+			no = drawSeg(seg, getLength(), rot, no);
 			seg.dispose();
+			return no;
+		}
+
+		public void bboxCurrentSegment(final Rectangle2D r) {
+			if (dx == 0.0 && dy == 0.0) {
+				return;
+			}
+			final AffineTransform at = AffineTransform.getTranslateInstance(x,
+					y);
+			final double rot = getOrientation();
+			at.rotate(rot);
+			bbox(r, at, getLength(), rot);
 		}
 
 		private boolean mustDraw(final Graphics2D g, final int type,
@@ -140,29 +152,64 @@ public class PenShapeDrawer extends AbstractShapeDrawer {
 			return g.getClip().intersects(pen.getBoundingBox(type, rot));
 		}
 
-		private void drawSeg(final Graphics2D seg, final double length,
-				final double rot) {
+		private void bbox(final Rectangle2D r, final AffineTransform af,
+				final double length, final double rot) {
+			double pos = 0.0;
+			final double end = Math.max(length - segLen * 0.5, 0.0);
+			while (pos <= end) {
+				final AffineTransform at = new AffineTransform(af);
+				final Shape s;
+				if (isFirst && pos == 0.0) {
+					s = pen.getBoundingBox(Pen.SEG_START, rot);
+				} else if (isLast && pos + segLen > end) {
+					s = pen.getBoundingBox(Pen.SEG_END, rot);
+				} else {
+					s = pen.getBoundingBox(Pen.SEG_NORM, rot);
+				}
+				unite(r, transform(at, s));
+				pos += segLen;
+				af.translate(segLen, 0.0);
+			}
+		}
+
+		private Rectangle2D transform(final AffineTransform at, final Shape s) {
+			final Rectangle2D r = s.getBounds2D();
+			Point2D topLeft;
+			Point2D bottomRight;
+			topLeft = at.transform(
+					new Point2D.Double(r.getMinX(), r.getMinY()), null);
+			bottomRight = at.transform(
+					new Point2D.Double(r.getMaxX(), r.getMaxY()), null);
+			return new Rectangle2D.Double(topLeft.getX(), topLeft.getY(),
+					bottomRight.getX() - topLeft.getX(), bottomRight.getY()
+							- topLeft.getY());
+		}
+
+		private int drawSeg(final Graphics2D seg, final double length,
+				final double rot, int no) {
 			double pos = 0.0;
 			final double end = Math.max(length - segLen * 0.5, 0.0);
 			while (pos <= end) {
 				final Graphics2D s = (Graphics2D) seg.create();
 				if (isFirst && pos == 0.0) {
 					if (mustDraw(s, Pen.SEG_START, rot)) {
-						pen.start(s, rot);
+						pen.start(s, no, rot);
 					}
 				} else if (isLast && pos + segLen > end) {
 					if (mustDraw(s, Pen.SEG_END, rot)) {
-						pen.end(s, rot);
+						pen.end(s, no, rot);
 					}
 				} else {
 					if (mustDraw(s, Pen.SEG_NORM, rot)) {
-						pen.draw(s, rot);
+						pen.draw(s, no, rot);
 					}
 				}
 				pos += segLen;
+				++no;
 				s.dispose();
 				seg.translate(segLen, 0.0);
 			}
+			return no;
 		}
 
 		public void setIsLast(final boolean isLast) {
@@ -173,6 +220,7 @@ public class PenShapeDrawer extends AbstractShapeDrawer {
 
 	@Override
 	public void draw(final Graphics gfx, final Shape outline) {
+		int no = 0;
 		final Graphics2D g = (Graphics2D) gfx.create();
 		pen.prepare(g, outline);
 		final PathIterator pi = outline
@@ -183,7 +231,7 @@ public class PenShapeDrawer extends AbstractShapeDrawer {
 		while (!pi.isDone()) {
 			cur = new Segment(pi, curMoveTo);
 			cur.setLast(last);
-			drawIfNotNull(g, last);
+			no = drawIfNotNull(g, last, no);
 			curMoveTo = cur.getCurMoveTo();
 			last = cur;
 			pi.next();
@@ -191,19 +239,56 @@ public class PenShapeDrawer extends AbstractShapeDrawer {
 		if (cur != null) {
 			cur.setIsLast(true);
 		}
-		drawIfNotNull(g, cur);
+		drawIfNotNull(g, cur, no);
 		g.dispose();
 	}
 
-	private static void drawIfNotNull(final Graphics gfx, final Segment seg) {
+	private static int drawIfNotNull(final Graphics gfx, final Segment seg,
+			final int no) {
+		if (!(seg != null && !seg.isMove())) {
+			return no;
+		}
+		return seg.drawCurrentSegment((Graphics2D) gfx, no);
+	}
+
+	private static void bboxIfNotNull(final Rectangle2D r, final Segment seg) {
 		if (seg != null && !seg.isMove()) {
-			seg.drawCurrentSegment((Graphics2D) gfx);
+			seg.bboxCurrentSegment(r);
+		}
+	}
+
+	private static void unite(final Rectangle2D r, final Shape s) {
+		if (r.isEmpty()) {
+			r.setRect(s.getBounds2D());
+		} else {
+			r.add(s.getBounds2D());
 		}
 	}
 
 	@Override
 	public Rectangle2D getBounds(final Shape s) {
-		throw new UnsupportedOperationException();
+		final Rectangle2D r = new Rectangle2D.Double();
+		final Shape sb = pen.getSpecialBounds(s);
+		if (sb != null) {
+			unite(r, sb);
+		}
+		final PathIterator pi = s.getPathIterator(null, Math.sqrt(segLen));
+		Point2D curMoveTo = null;
+		Segment last = null;
+		Segment cur = null;
+		while (!pi.isDone()) {
+			cur = new Segment(pi, curMoveTo);
+			cur.setLast(last);
+			bboxIfNotNull(r, last);
+			curMoveTo = cur.getCurMoveTo();
+			last = cur;
+			pi.next();
+		}
+		if (cur != null) {
+			cur.setIsLast(true);
+		}
+		bboxIfNotNull(r, cur);
+		return r;
 	}
 
 }

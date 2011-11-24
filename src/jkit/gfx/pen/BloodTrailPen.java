@@ -21,14 +21,17 @@ public class BloodTrailPen extends SimplePen {
 		super(new Color(0x407F0000, true), segmentLength);
 	}
 
+	private int seed;
+
 	@Override
 	public void prepare(final Graphics2D g, final Shape s) {
 		super.prepare(g, s);
-		rnd.setSeed(s.getBounds2D().hashCode());
+		seed = s.getBounds2D().hashCode();
 	}
 
 	@Override
-	public void start(final Graphics2D g, final double rotation) {
+	public void start(final Graphics2D g, final int no, final double rotation) {
+		rnd.setSeed(seed + no);
 		final double dx = segmentLength * 0.25;
 		final double dy = segmentLength * 0.25;
 		final double lx = segmentLength * 0.5;
@@ -44,7 +47,8 @@ public class BloodTrailPen extends SimplePen {
 	}
 
 	@Override
-	public void draw(final Graphics2D g, final double rotation) {
+	public void draw(final Graphics2D g, final int no, final double rotation) {
+		rnd.setSeed(seed + no);
 		final double dx = segmentLength * 0.25;
 		final double dy = segmentLength * 0.25;
 		final double lx = segmentLength * 0.5;
