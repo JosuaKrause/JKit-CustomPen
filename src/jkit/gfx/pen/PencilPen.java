@@ -17,11 +17,11 @@ public class PencilPen extends SimplePen {
 
     protected double metricSpreadX = 0.5;
 
-    protected double metricSpreadY = 0.125;
+    protected double metricSpreadY = 0.23;
 
     protected double metricMaxLength = 1.125;
 
-    protected int count = 25;
+    protected int count = 30;
 
     public PencilPen() {
         this(10.0);
