@@ -6,128 +6,129 @@ import java.awt.Graphics2D;
 import java.awt.Shape;
 import java.awt.geom.Line2D;
 import java.awt.geom.Rectangle2D;
-import java.util.Random;
 
-public class PencilPen extends SimplePen {
+public class PencilPen extends CachedRandomPen {
 
-	private final Random rnd = new Random();
+    protected double metricShiftX = 0.5;
 
-	private int seed;
+    protected double metricShiftY = 0;
 
-	protected double metricShiftX = 0.5;
+    protected double metricSpreadX = 0.5;
 
-	protected double metricShiftY = 0;
+    protected double metricSpreadY = 0.125;
 
-	protected double metricSpreadX = 0.5;
+    protected double metricMaxLength = 1.125;
 
-	protected double metricSpreadY = 0.125;
+    protected int count = 25;
 
-	protected double metricMaxLength = 1.125;
+    public PencilPen() {
+        this(10.0);
+    }
 
-	protected int count = 25;
+    public PencilPen(final double segmentLength) {
+        super(new Color(0x40303030, true), segmentLength);
+    }
 
-	public PencilPen() {
-		this(10.0);
-	}
+    public PencilPen(final Color color, final double segmentLength) {
+        super(new Color(color.getRGB() | 0x40000000, true), segmentLength);
+    }
 
-	public PencilPen(final double segmentLength) {
-		super(new Color(0x40303030, true), segmentLength);
-	}
+    @Override
+    public void prepare(final Graphics2D g, final Shape s) {
+        super.prepare(g, s);
+        g.setStroke(new BasicStroke(.5f));
+        postPrepare(g);
+    }
 
-	public PencilPen(final Color color, final double segmentLength) {
-		super(new Color(color.getRGB() | 0x40000000, true), segmentLength);
-	}
+    private double dx;
 
-	@Override
-	public void prepare(final Graphics2D g, final Shape s) {
-		super.prepare(g, s);
-		g.setStroke(new BasicStroke(.5f));
-		seed = s.getBounds2D().hashCode();
-		postPrepare(g);
-	}
+    private double dy;
 
-	private double dx;
+    private double lx;
 
-	private double dy;
+    private double ly;
 
-	private double lx;
+    private double ll;
 
-	private double ly;
+    @Override
+    public void setSegmentLength(final double segmentLength) {
+        super.setSegmentLength(segmentLength);
+        lx = segmentLength * metricSpreadX;
+        ly = segmentLength * metricSpreadY;
+        dx = segmentLength * metricShiftX;
+        dy = segmentLength * metricShiftY;
+        ll = segmentLength * metricMaxLength;
+        invalidate();
+    }
 
-	private double ll;
+    protected final double getNextX() {
+        return rndNextGaussian() * lx + dx;
+    }
 
-	@Override
-	public void setSegmentLength(final double segmentLength) {
-		super.setSegmentLength(segmentLength);
-		lx = segmentLength * metricSpreadX;
-		ly = segmentLength * metricSpreadY;
-		dx = segmentLength * metricShiftX;
-		dy = segmentLength * metricShiftY;
-		ll = segmentLength * metricMaxLength;
-	}
+    protected final double getNextY() {
+        return rndNextGaussian() * ly + dy;
+    }
 
-	protected final double getNextX() {
-		return rnd.nextGaussian() * lx + dx;
-	}
+    protected final double getNextLine() {
+        return rndNextGaussian() * ll;
+    }
 
-	protected final double getNextY() {
-		return rnd.nextGaussian() * ly + dy;
-	}
+    private static final double GAUSS_NULL = 4;
 
-	protected final double getNextLine() {
-		return rnd.nextGaussian() * ll;
-	}
+    protected final double getMinX() {
+        return -GAUSS_NULL * lx + dx;
+    }
 
-	private static final double GAUSS_NULL = 4;
+    protected final double getMinY() {
+        return -GAUSS_NULL * ly + dy;
+    }
 
-	protected final double getMinX() {
-		return -GAUSS_NULL * lx + dx;
-	}
+    protected final double getMinLine() {
+        return -GAUSS_NULL * ll;
+    }
 
-	protected final double getMinY() {
-		return -GAUSS_NULL * ly + dy;
-	}
+    protected final double getMaxX() {
+        return GAUSS_NULL * lx + dx;
+    }
 
-	protected final double getMinLine() {
-		return -GAUSS_NULL * ll;
-	}
+    protected final double getMaxY() {
+        return GAUSS_NULL * ly + dy;
+    }
 
-	protected final double getMaxX() {
-		return GAUSS_NULL * lx + dx;
-	}
+    protected final double getMaxLine() {
+        return GAUSS_NULL * ll;
+    }
 
-	protected final double getMaxY() {
-		return GAUSS_NULL * ly + dy;
-	}
+    @Override
+    protected void drawSegment(final Graphics2D g) {
+        for (int i = 0; i < count; ++i) {
+            final double x = getNextX();
+            final double y = getNextY();
+            final double len = getNextLine();
+            g.draw(new Line2D.Double(x, y, x + len, y));
+        }
+    }
 
-	protected final double getMaxLine() {
-		return GAUSS_NULL * ll;
-	}
+    private Rectangle2D bbox;
 
-	protected final void setSeed(final int no) {
-		rnd.setSeed(seed + no);
-	}
+    @Override
+    protected void invalidate() {
+        super.invalidate();
+        bbox = null;
+    }
 
-	@Override
-	public void draw(final Graphics2D g, final int no, final double rotation) {
-		setSeed(no);
-		for (int i = 0; i < count; ++i) {
-			final double x = getNextX();
-			final double y = getNextY();
-			final double len = getNextLine();
-			g.draw(new Line2D.Double(x, y, x + len, y));
-		}
-	}
-
-	@Override
-	public Rectangle2D getBoundingBox(final int type, final double rotation) {
-		final double left = getMinX() + getMinLine();
-		final double right = getMaxX() + getMaxLine();
-		final double top = getMinY();
-		final double bottom = getMaxY();
-		final Rectangle2D r = new Rectangle2D.Double(left, top, right - left,
-				bottom - top);
-		return getBounds(r);
-	}
+    @Override
+    public Rectangle2D getBoundingBox(final int type, final double rotation) {
+        if (bbox == null) {
+            final double left = getMinX() + getMinLine();
+            final double right = getMaxX() + getMaxLine();
+            final double top = getMinY();
+            final double bottom = getMaxY();
+            final Rectangle2D r = new Rectangle2D.Double(left, top, right - left,
+                    bottom - top);
+            bbox = getBounds(r);
+        }
+        return bbox;
+    }
 
 }
