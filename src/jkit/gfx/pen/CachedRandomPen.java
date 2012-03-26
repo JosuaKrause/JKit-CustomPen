@@ -3,6 +3,7 @@ package jkit.gfx.pen;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Image;
+import java.awt.RenderingHints;
 import java.awt.Shape;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
@@ -91,6 +92,8 @@ public abstract class CachedRandomPen extends SimplePen {
             gfx.setColor(g.getColor());
             gfx.setStroke(g.getStroke());
             gfx.setRenderingHints(g.getRenderingHints());
+            gfx.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+                    RenderingHints.VALUE_ANTIALIAS_ON);
             gfx.scale(CACHE_SCALE, CACHE_SCALE);
             gfx.translate(-dx, -dy);
             drawSegment(gfx);
