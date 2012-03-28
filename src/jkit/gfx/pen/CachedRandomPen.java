@@ -69,6 +69,8 @@ public abstract class CachedRandomPen extends SimplePen {
         rndSegement.setSeed(seed + no);
     }
 
+    private Rectangle2D oldBBox;
+
     @Override
     public final void draw(final Graphics2D g, final int no,
             final double rotation) {
@@ -78,6 +80,10 @@ public abstract class CachedRandomPen extends SimplePen {
             return;
         }
         final Rectangle2D bbox = getBoundingBox(SEG_NORM, rotation);
+        if (oldBBox == null || !oldBBox.equals(bbox)) {
+            invalidate();
+            oldBBox = bbox;
+        }
         final double dx = bbox.getMinX();
         final double dy = bbox.getMinY();
         final int width = (int) Math.ceil(bbox.getWidth() * CACHE_SCALE);
@@ -95,11 +101,12 @@ public abstract class CachedRandomPen extends SimplePen {
             gfx.translate(-dx, -dy);
             drawSegment(gfx);
             gfx.dispose();
-            cache[bucket] = img;
+            cache[bucket] = img.getScaledInstance(
+                    (int) Math.ceil(bbox.getWidth()),
+                    (int) Math.ceil(bbox.getHeight()), Image.SCALE_SMOOTH);
         }
         g.translate(dx, dy);
-        g.scale(1.0 / CACHE_SCALE, 1.0 / CACHE_SCALE);
-        g.drawImage(cache[bucket], 0, 0, width, height, null);
+        g.drawImage(cache[bucket], 0, 0, null);
         // g.setColor(new Color(0x10ff00ff, true));
         // g.fill(new Rectangle2D.Double(0, 0, width, height));
     }
