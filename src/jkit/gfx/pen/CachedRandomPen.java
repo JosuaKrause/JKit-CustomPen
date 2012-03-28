@@ -12,9 +12,11 @@ public abstract class CachedRandomPen extends SimplePen {
 
     public static boolean doCaching = true;
 
-    public static final int DEFAULT_CACHE_SIZE = 10;
+    public static double CACHE_SCALE = 8;
 
-    public static final double CACHE_SCALE = 8;
+    public static boolean doScale = false;
+
+    public static final int DEFAULT_CACHE_SIZE = 20;
 
     private final Random rndSegement = new Random();
 
@@ -86,8 +88,10 @@ public abstract class CachedRandomPen extends SimplePen {
         }
         final double dx = bbox.getMinX();
         final double dy = bbox.getMinY();
-        final int width = (int) Math.ceil(bbox.getWidth() * CACHE_SCALE);
-        final int height = (int) Math.ceil(bbox.getHeight() * CACHE_SCALE);
+        final int width = doScale ? (int) Math.ceil(bbox.getWidth()
+                * CACHE_SCALE) : (int) Math.ceil(bbox.getWidth());
+        final int height = doScale ? (int) Math.ceil(bbox.getHeight()
+                * CACHE_SCALE) : (int) Math.ceil(bbox.getHeight());
         final int bucket = getNextBucket(no);
         if (cache[bucket] == null) {
             setSeed(bucket);
@@ -97,13 +101,16 @@ public abstract class CachedRandomPen extends SimplePen {
             gfx.setColor(g.getColor());
             gfx.setStroke(g.getStroke());
             gfx.setRenderingHints(g.getRenderingHints());
-            gfx.scale(CACHE_SCALE, CACHE_SCALE);
+            if (doScale) {
+                gfx.scale(CACHE_SCALE, CACHE_SCALE);
+            }
             gfx.translate(-dx, -dy);
             drawSegment(gfx);
             gfx.dispose();
-            cache[bucket] = img.getScaledInstance(
+            cache[bucket] = doScale ? img.getScaledInstance(
                     (int) Math.ceil(bbox.getWidth()),
-                    (int) Math.ceil(bbox.getHeight()), Image.SCALE_SMOOTH);
+                    (int) Math.ceil(bbox.getHeight()), Image.SCALE_SMOOTH)
+                    : img;
         }
         g.translate(dx, dy);
         g.drawImage(cache[bucket], 0, 0, null);
