@@ -1,1 +1,3 @@
 bin/
+/.sonar/
+/sonar-project.properties

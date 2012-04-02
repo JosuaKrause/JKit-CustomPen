@@ -3,6 +3,7 @@ package jkit.gfx.pen;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Image;
+import java.awt.RenderingHints;
 import java.awt.Shape;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
@@ -12,9 +13,11 @@ public abstract class CachedRandomPen extends SimplePen {
 
     public static boolean doCaching = true;
 
-    public static final int DEFAULT_CACHE_SIZE = 10;
+    public static double CACHE_SCALE = 8;
 
-    public static final double CACHE_SCALE = 8;
+    public static boolean doScale = false;
+
+    public static final int DEFAULT_CACHE_SIZE = 20;
 
     private final Random rndSegement = new Random();
 
@@ -69,6 +72,8 @@ public abstract class CachedRandomPen extends SimplePen {
         rndSegement.setSeed(seed + no);
     }
 
+    private Rectangle2D oldBBox;
+
     @Override
     public final void draw(final Graphics2D g, final int no,
             final double rotation) {
@@ -78,10 +83,16 @@ public abstract class CachedRandomPen extends SimplePen {
             return;
         }
         final Rectangle2D bbox = getBoundingBox(SEG_NORM, rotation);
+        if (oldBBox == null || !oldBBox.equals(bbox)) {
+            invalidate();
+            oldBBox = bbox;
+        }
         final double dx = bbox.getMinX();
         final double dy = bbox.getMinY();
-        final int width = (int) Math.ceil(bbox.getWidth() * CACHE_SCALE);
-        final int height = (int) Math.ceil(bbox.getHeight() * CACHE_SCALE);
+        final int width = doScale ? (int) Math.ceil(bbox.getWidth()
+                * CACHE_SCALE) : (int) Math.ceil(bbox.getWidth());
+        final int height = doScale ? (int) Math.ceil(bbox.getHeight()
+                * CACHE_SCALE) : (int) Math.ceil(bbox.getHeight());
         final int bucket = getNextBucket(no);
         if (cache[bucket] == null) {
             setSeed(bucket);
@@ -91,15 +102,21 @@ public abstract class CachedRandomPen extends SimplePen {
             gfx.setColor(g.getColor());
             gfx.setStroke(g.getStroke());
             gfx.setRenderingHints(g.getRenderingHints());
-            gfx.scale(CACHE_SCALE, CACHE_SCALE);
+            gfx.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+                    RenderingHints.VALUE_ANTIALIAS_ON);
+            if (doScale) {
+                gfx.scale(CACHE_SCALE, CACHE_SCALE);
+            }
             gfx.translate(-dx, -dy);
             drawSegment(gfx);
             gfx.dispose();
-            cache[bucket] = img;
+            cache[bucket] = doScale ? img.getScaledInstance(
+                    (int) Math.ceil(bbox.getWidth()),
+                    (int) Math.ceil(bbox.getHeight()), Image.SCALE_SMOOTH)
+                    : img;
         }
         g.translate(dx, dy);
-        g.scale(1.0 / CACHE_SCALE, 1.0 / CACHE_SCALE);
-        g.drawImage(cache[bucket], 0, 0, width, height, null);
+        g.drawImage(cache[bucket], 0, 0, null);
         // g.setColor(new Color(0x10ff00ff, true));
         // g.fill(new Rectangle2D.Double(0, 0, width, height));
     }
