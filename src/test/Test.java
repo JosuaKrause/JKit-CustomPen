@@ -41,7 +41,7 @@ public class Test {
 
         new ArrowPen(),
 
-            new CrayonPen(Color.GREEN, 5.0),
+        new CrayonPen(Color.GREEN, 5.0),
 
         new SnowPen(
                 new SimpleShapeDrawer(new BasicStroke(5f), Color.BLACK),
