@@ -1,5 +1,6 @@
 package jkit.gfx;
 
+import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Shape;
 import java.awt.geom.Rectangle2D;
@@ -10,24 +11,26 @@ import jkit.gfx.pen.SnowPen;
 
 public abstract class AbstractShapeDrawer {
 
-	public static boolean beSerious = true;
+    public static boolean beSerious = true;
 
-	public abstract void draw(final Graphics gfx, final Shape outline);
+    public abstract void draw(final Graphics gfx, final Shape outline);
 
-	public abstract Rectangle2D getBounds(Shape s);
+    public abstract Rectangle2D getBounds(Shape s);
 
-	public static final AbstractShapeDrawer getShapeDrawerForPen(final Pen p) {
-		return process(p != null ? new PenShapeDrawer(p)
-				: new SimpleShapeDrawer());
-	}
+    public abstract void setColor(Color color);
 
-	private static AbstractShapeDrawer process(final AbstractShapeDrawer asd) {
-		if (beSerious) {
-			return asd;
-		}
-		final Calendar cal = Calendar.getInstance();
-		return cal.get(Calendar.MONTH) == Calendar.DECEMBER ? new PenShapeDrawer(
-				new SnowPen(asd, 5.0)) : asd;
-	}
+    public static final AbstractShapeDrawer getShapeDrawerForPen(final Pen p) {
+        return process(p != null ? new PenShapeDrawer(p)
+        : new SimpleShapeDrawer());
+    }
+
+    private static AbstractShapeDrawer process(final AbstractShapeDrawer asd) {
+        if (beSerious) {
+            return asd;
+        }
+        final Calendar cal = Calendar.getInstance();
+        return cal.get(Calendar.MONTH) == Calendar.DECEMBER ? new PenShapeDrawer(
+                new SnowPen(asd, 5.0)) : asd;
+    }
 
 }

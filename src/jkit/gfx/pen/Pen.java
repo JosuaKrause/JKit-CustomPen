@@ -1,5 +1,6 @@
 package jkit.gfx.pen;
 
+import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Shape;
 import java.awt.geom.Rectangle2D;
@@ -98,6 +99,8 @@ public interface Pen {
      *         line segments of this length.
      */
     double segmentLength();
+
+    void setColor(Color color);
 
     /**
      * A normal segment.

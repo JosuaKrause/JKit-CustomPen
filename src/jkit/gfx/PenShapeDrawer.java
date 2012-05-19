@@ -1,5 +1,6 @@
 package jkit.gfx;
 
+import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Shape;
@@ -275,6 +276,11 @@ public class PenShapeDrawer extends AbstractShapeDrawer {
         } else {
             r.add(s.getBounds2D());
         }
+    }
+
+    @Override
+    public void setColor(final Color color) {
+        pen.setColor(color);
     }
 
     @Override
