@@ -4,6 +4,12 @@ import java.awt.Graphics2D;
 import java.awt.Shape;
 import java.awt.geom.Rectangle2D;
 
+/**
+ * A pen decorating another pen.
+ * 
+ * @author Joschi <josua.krause@gmail.com>
+ * 
+ */
 public abstract class DecoratorPen implements Pen {
 
 	protected final Pen pen;

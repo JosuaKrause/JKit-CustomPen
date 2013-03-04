@@ -4,6 +4,12 @@ import java.awt.Graphics2D;
 import java.awt.Shape;
 import java.awt.geom.Rectangle2D;
 
+/**
+ * An adapter for a pen.
+ * 
+ * @author Joschi <josua.krause@gmail.com>
+ * 
+ */
 public abstract class PenAdapter implements Pen {
 
 	@Override
