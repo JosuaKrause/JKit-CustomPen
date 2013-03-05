@@ -12,7 +12,7 @@ public class SimpleShapeDrawer extends AbstractShapeDrawer {
 
     private final Stroke stroke;
 
-    private final Paint paint;
+    private Paint paint;
 
     public SimpleShapeDrawer() {
         this(null, null);
@@ -25,7 +25,7 @@ public class SimpleShapeDrawer extends AbstractShapeDrawer {
 
     @Override
     public void setColor(final Color color) {
-        // paint = color;
+        paint = color;
     }
 
     @Override
