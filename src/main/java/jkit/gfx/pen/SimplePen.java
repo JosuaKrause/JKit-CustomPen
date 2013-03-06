@@ -7,65 +7,109 @@ import java.awt.Shape;
 import java.awt.Stroke;
 import java.awt.geom.Rectangle2D;
 
+/**
+ * A pen with all basic functionality taken care of.
+ * 
+ * @author Joschi <josua.krause@gmail.com>
+ */
 public abstract class SimplePen extends PenAdapter {
 
-	protected double segmentLength;
+  /** The segment length. */
+  protected double segmentLength;
 
-	protected Color color;
+  /** The color. */
+  protected Color color;
 
-	private boolean initialized;
+  /** Whether the pen is already initialized. */
+  private boolean initialized;
 
-	public SimplePen(final Color color) {
-		this(color, 10.0);
-	}
+  /**
+   * Creates a simple pen with the given color.
+   * 
+   * @param color The color.
+   */
+  public SimplePen(final Color color) {
+    this(color, 10.0);
+  }
 
-	public SimplePen(final Color color, final double segmentLength) {
-		this.color = color;
-		this.segmentLength = segmentLength;
-		initialized = false;
-	}
+  /**
+   * Creates a simple pen with the given color and segment length.
+   * 
+   * @param color The color.
+   * @param segmentLength The segment length.
+   */
+  public SimplePen(final Color color, final double segmentLength) {
+    this.color = color;
+    this.segmentLength = segmentLength;
+    initialized = false;
+  }
 
-	protected Stroke usedStroke;
+  /** The stroke used to draw. */
+  protected Stroke usedStroke;
 
-	@Override
-	public void prepare(final Graphics2D g, final Shape s) {
-		if (!initialized) {
-			setColor(color);
-			setSegmentLength(segmentLength);
-			initialized = true;
-		}
-		if (color != null) {
-			g.setColor(color);
-		}
-		postPrepare(g);
-	}
+  @Override
+  public void prepare(final Graphics2D g, final Shape s) {
+    if(!initialized) {
+      setColor(color);
+      setSegmentLength(segmentLength);
+      initialized = true;
+    }
+    if(color != null) {
+      g.setColor(color);
+    }
+    postPrepare(g);
+  }
 
-	protected void postPrepare(final Graphics2D g) {
-		usedStroke = g.getStroke();
-	}
+  /**
+   * This method is called after {@link #prepare(Graphics2D, Shape)} has
+   * finished.
+   * 
+   * @param g The graphics configuration.
+   */
+  protected void postPrepare(final Graphics2D g) {
+    usedStroke = g.getStroke();
+  }
 
-	private static final BasicStroke BASE = new BasicStroke(1f);
+  /** The standard stroke. */
+  private static final BasicStroke BASE = new BasicStroke(1f);
 
-	protected Rectangle2D getBounds(final Shape s) {
-		return (usedStroke != null ? usedStroke.createStrokedShape(s) : BASE
-				.createStrokedShape(s)).getBounds2D();
-	}
+  /**
+   * Getter.
+   * 
+   * @param s The shape.
+   * @return The bounds of this shape accounting for strokes.
+   */
+  protected Rectangle2D getBounds(final Shape s) {
+    return (usedStroke != null ? usedStroke.createStrokedShape(s) : BASE
+        .createStrokedShape(s)).getBounds2D();
+  }
 
-	public void setColor(final Color color) {
-		this.color = color;
-	}
+  @Override
+  public void setColor(final Color color) {
+    this.color = color;
+  }
 
-	public Color color() {
-		return color;
-	}
+  /**
+   * Getter.
+   * 
+   * @return The color.
+   */
+  public Color color() {
+    return color;
+  }
 
-	public void setSegmentLength(final double segmentLength) {
-		this.segmentLength = segmentLength;
-	}
+  /**
+   * Setter.
+   * 
+   * @param segmentLength The segment length.
+   */
+  public void setSegmentLength(final double segmentLength) {
+    this.segmentLength = segmentLength;
+  }
 
-	@Override
-	public double segmentLength() {
-		return segmentLength;
-	}
+  @Override
+  public double segmentLength() {
+    return segmentLength;
+  }
 
 }

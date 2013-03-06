@@ -10,7 +10,7 @@ import jkit.gfx.AbstractShapeDrawer;
 /**
  * A decorator pen for adding a snow effect.
  * 
- * @author "Joschi <josua.krause@gmail.com>"
+ * @author Joschi <josua.krause@gmail.com>
  */
 public class SnowPen extends DecoratorPen {
 

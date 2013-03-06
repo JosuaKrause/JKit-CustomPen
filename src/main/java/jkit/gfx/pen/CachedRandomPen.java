@@ -9,126 +9,179 @@ import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.util.Random;
 
+/**
+ * A pen caching segments to speed up drawing.
+ * 
+ * @author Joschi <josua.krause@gmail.com>
+ */
 public abstract class CachedRandomPen extends SimplePen {
 
-    public static boolean doCaching = true;
+  /** Whether the caching is active. */
+  public static boolean doCaching = true;
 
-    public static double CACHE_SCALE = 8;
+  /** The scaling of the cache. */
+  public static double CACHE_SCALE = 8;
 
-    public static boolean doScale = false;
+  /** Whether the cache should be scaled. */
+  public static boolean doScale = false;
 
-    public static final int DEFAULT_CACHE_SIZE = 20;
+  /** The default cache size. */
+  public static final int DEFAULT_CACHE_SIZE = 20;
 
-    private final Random rndSegement = new Random();
+  /** The random number generator for segments. */
+  private final Random rndSegement = new Random();
 
-    private final Random rndBucket = new Random();
+  /** The random number generator for buckets. */
+  private final Random rndBucket = new Random();
 
-    private final int cacheSize = DEFAULT_CACHE_SIZE;
+  /** The cache size. */
+  private final int cacheSize = DEFAULT_CACHE_SIZE;
 
-    public CachedRandomPen(final Color color) {
-        super(color);
+  /**
+   * Creates a cached pen with the given color.
+   * 
+   * @param color The color.
+   */
+  public CachedRandomPen(final Color color) {
+    super(color);
+  }
+
+  /**
+   * Creates a cached pen with the given color and segment length.
+   * 
+   * @param color The color.
+   * @param segmentLength The segment length.
+   */
+  public CachedRandomPen(final Color color, final double segmentLength) {
+    super(color, segmentLength);
+  }
+
+  /** The cache. */
+  private final Image[] cache = new Image[cacheSize];
+
+  /** Empties the cache. */
+  protected void invalidate() {
+    int i = cache.length;
+    while(--i >= 0) {
+      cache[i] = null;
     }
+  }
 
-    public CachedRandomPen(final Color color, final double segmentLength) {
-        super(color,segmentLength);
+  /**
+   * Starts the next bucket.
+   * 
+   * @param no The number of the bucket.
+   * @return The value for the given bucket.
+   */
+  private int getNextBucket(final int no) {
+    rndBucket.setSeed(seed + no);
+    return rndBucket.nextInt(cache.length);
+  }
+
+  /** The current seed. */
+  private int seed;
+
+  @Override
+  public void prepare(final Graphics2D g, final Shape s) {
+    super.prepare(g, s);
+    seed = s.getBounds2D().hashCode();
+    rndBucket.setSeed(seed);
+  }
+
+  @Override
+  public void setColor(final Color color) {
+    super.setColor(color);
+    invalidate();
+  }
+
+  @Override
+  public void setSegmentLength(final double segmentLength) {
+    super.setSegmentLength(segmentLength);
+    invalidate();
+  }
+
+  /**
+   * Setter.
+   * 
+   * @param no The bucket number.
+   */
+  protected void setSeed(final int no) {
+    rndSegement.setSeed(seed + no);
+  }
+
+  /** The previous bounding box. */
+  private Rectangle2D oldBBox;
+
+  @Override
+  public final void draw(final Graphics2D g, final int no,
+      final double rotation) {
+    if(!doCaching) {
+      setSeed(no);
+      drawSegment(g);
+      return;
     }
-
-    private final Image[] cache = new Image[cacheSize];
-
-    protected void invalidate() {
-        int i = cache.length;
-        while (--i >= 0) {
-            cache[i] = null;
-        }
+    final Rectangle2D bbox = getBoundingBox(SEG_NORM, rotation);
+    if(oldBBox == null || !oldBBox.equals(bbox)) {
+      invalidate();
+      oldBBox = bbox;
     }
-
-    private int getNextBucket(final int no) {
-        rndBucket.setSeed(seed + no);
-        return rndBucket.nextInt(cache.length);
+    final double dx = bbox.getMinX();
+    final double dy = bbox.getMinY();
+    final int width = doScale ? (int) Math.ceil(bbox.getWidth()
+        * CACHE_SCALE) : (int) Math.ceil(bbox.getWidth());
+    final int height = doScale ? (int) Math.ceil(bbox.getHeight()
+        * CACHE_SCALE) : (int) Math.ceil(bbox.getHeight());
+    final int bucket = getNextBucket(no);
+    if(cache[bucket] == null) {
+      setSeed(bucket);
+      final BufferedImage img = new BufferedImage(width, height,
+          BufferedImage.TYPE_INT_ARGB);
+      final Graphics2D gfx = img.createGraphics();
+      gfx.setColor(g.getColor());
+      gfx.setStroke(g.getStroke());
+      gfx.setRenderingHints(g.getRenderingHints());
+      gfx.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+          RenderingHints.VALUE_ANTIALIAS_ON);
+      if(doScale) {
+        gfx.scale(CACHE_SCALE, CACHE_SCALE);
+      }
+      gfx.translate(-dx, -dy);
+      drawSegment(gfx);
+      gfx.dispose();
+      cache[bucket] = doScale ? img.getScaledInstance(
+          (int) Math.ceil(bbox.getWidth()),
+          (int) Math.ceil(bbox.getHeight()), Image.SCALE_SMOOTH)
+          : img;
     }
+    g.translate(dx, dy);
+    g.drawImage(cache[bucket], 0, 0, null);
+    // g.setColor(new Color(0x10ff00ff, true));
+    // g.fill(new Rectangle2D.Double(0, 0, width, height));
+  }
 
-    private int seed;
+  /**
+   * Renders the current segment.
+   * 
+   * @param g The graphics context.
+   */
+  protected abstract void drawSegment(Graphics2D g);
 
-    @Override
-    public void prepare(final Graphics2D g, final Shape s) {
-        super.prepare(g, s);
-        seed = s.getBounds2D().hashCode();
-        rndBucket.setSeed(seed);
-    }
+  /**
+   * Getter.
+   * 
+   * @return The next random value.
+   */
+  protected double rndNextDouble() {
+    return rndSegement.nextDouble();
+  }
 
-    @Override
-    public void setColor(final Color color) {
-        super.setColor(color);
-        invalidate();
-    }
-
-    @Override
-    public void setSegmentLength(final double segmentLength) {
-        super.setSegmentLength(segmentLength);
-        invalidate();
-    }
-
-    protected void setSeed(final int no) {
-        rndSegement.setSeed(seed + no);
-    }
-
-    private Rectangle2D oldBBox;
-
-    @Override
-    public final void draw(final Graphics2D g, final int no,
-            final double rotation) {
-        if (!doCaching) {
-            setSeed(no);
-            drawSegment(g);
-            return;
-        }
-        final Rectangle2D bbox = getBoundingBox(SEG_NORM, rotation);
-        if (oldBBox == null || !oldBBox.equals(bbox)) {
-            invalidate();
-            oldBBox = bbox;
-        }
-        final double dx = bbox.getMinX();
-        final double dy = bbox.getMinY();
-        final int width = doScale ? (int) Math.ceil(bbox.getWidth()
-                * CACHE_SCALE) : (int) Math.ceil(bbox.getWidth());
-        final int height = doScale ? (int) Math.ceil(bbox.getHeight()
-                * CACHE_SCALE) : (int) Math.ceil(bbox.getHeight());
-        final int bucket = getNextBucket(no);
-        if (cache[bucket] == null) {
-            setSeed(bucket);
-            final BufferedImage img = new BufferedImage(width, height,
-                    BufferedImage.TYPE_INT_ARGB);
-            final Graphics2D gfx = img.createGraphics();
-            gfx.setColor(g.getColor());
-            gfx.setStroke(g.getStroke());
-            gfx.setRenderingHints(g.getRenderingHints());
-            gfx.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
-                    RenderingHints.VALUE_ANTIALIAS_ON);
-            if (doScale) {
-                gfx.scale(CACHE_SCALE, CACHE_SCALE);
-            }
-            gfx.translate(-dx, -dy);
-            drawSegment(gfx);
-            gfx.dispose();
-            cache[bucket] = doScale ? img.getScaledInstance(
-                    (int) Math.ceil(bbox.getWidth()),
-                    (int) Math.ceil(bbox.getHeight()), Image.SCALE_SMOOTH)
-                    : img;
-        }
-        g.translate(dx, dy);
-        g.drawImage(cache[bucket], 0, 0, null);
-        // g.setColor(new Color(0x10ff00ff, true));
-        // g.fill(new Rectangle2D.Double(0, 0, width, height));
-    }
-
-    protected abstract void drawSegment(Graphics2D g);
-
-    protected double rndNextDouble() {
-        return rndSegement.nextDouble();
-    }
-
-    protected double rndNextGaussian() {
-        return rndSegement.nextGaussian();
-    }
+  /**
+   * Getter.
+   * 
+   * @return The next gaussian random value.
+   */
+  protected double rndNextGaussian() {
+    return rndSegement.nextGaussian();
+  }
 
 }
