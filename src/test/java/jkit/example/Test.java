@@ -30,147 +30,158 @@ import jkit.gfx.pen.SnowPen;
  * A small example. Use the mouse buttons to change pens and the appearance.
  * 
  * @author Joschi <josua.krause@gmail.com>
- * 
  */
 public class Test {
 
-	private static JFrame jFrame;
-	private static Shape shape;
-	private static AbstractShapeDrawer shapeDrawer;
-	private static int curPen = 0;
-	private static Pen[] pens = new Pen[] {
+  /** The frame. */
+  public static JFrame jFrame;
+  /** The test shape. */
+  public static Shape shape;
+  /** The current shape drawer. */
+  public static AbstractShapeDrawer shapeDrawer;
+  /** The current pen. */
+  public static int curPen = 0;
+  /** A list of all pens. */
+  public static final Pen[] pens = new Pen[] {
 
-		null,
+      null,
 
-		new PencilPen(),
+      new PencilPen(),
 
-		new BloodTrailPen(),
+      new BloodTrailPen(),
 
-		new ArrowPen(),
+      new ArrowPen(),
 
-		new CrayonPen(Color.GREEN, 5.0),
+      new CrayonPen(Color.GREEN, 5.0),
 
-		new SnowPen(
-				new SimpleShapeDrawer(new BasicStroke(5f), Color.BLACK),
-				5.0, 2.0, 45, true),
+      new SnowPen(new SimpleShapeDrawer(new BasicStroke(5f), Color.BLACK), 5.0, 2.0, 45,
+          true),
 
-				// new FacingTrianglePen(Color.BLUE, 30.0),
+      // new FacingTrianglePen(Color.BLUE, 30.0),
 
-				new CirclePen(),
+      new CirclePen(),
 
-				null,
+      null,
 
-	};
+  };
 
-	private static int curBg = 0;
+  /** The current back ground. */
+  public static int curBg = 0;
 
-	private static Color[] bgs = new Color[] {
+  /** The list of all background colors. */
+  public static final Color[] bgs = new Color[] {
 
-		null,
+      null,
 
-		Color.WHITE,
+      Color.WHITE,
 
-		Color.BLACK,
+      Color.BLACK,
 
-		Color.GREEN,
+      Color.GREEN,
 
-		Color.RED,
+      Color.RED,
 
-	};
+  };
 
-	public static final void setPen() {
-		final Pen p = pens[curPen];
-		if(curPen != 0 && p == null) {
-			shapeDrawer = new EasyVisibleShapeDrawer();
-			return;
-		}
-		shapeDrawer = AbstractShapeDrawer.getShapeDrawerForPen(p);
-	}
+  /** Sets the current pen. */
+  public static final void setPen() {
+    final Pen p = pens[curPen];
+    if(curPen != 0 && p == null) {
+      shapeDrawer = new EasyVisibleShapeDrawer();
+      return;
+    }
+    shapeDrawer = AbstractShapeDrawer.getShapeDrawerForPen(p);
+  }
 
-	private static boolean showBBox = false;
+  /** Whether to show bounding boxes. */
+  public static boolean showBBox = false;
 
-	/**
-	 * Starts the example application.
-	 * 
-	 * @param args
-	 *            No arguments.
-	 */
-	public static void main(final String[] args) {
-		setPen();
-		shape = createShape();
-		jFrame = new JFrame();
-		bgs[0] = jFrame.getBackground();
-		jFrame.add(new JComponent() {
+  /**
+   * Starts the example application.
+   * 
+   * @param args No arguments.
+   */
+  public static void main(final String[] args) {
+    setPen();
+    shape = createShape();
+    jFrame = new JFrame();
+    bgs[0] = jFrame.getBackground();
+    jFrame.add(new JComponent() {
 
-			private static final long serialVersionUID = 2257038010168418793L;
+      private static final long serialVersionUID = 2257038010168418793L;
 
-			@Override
-			protected void paintComponent(final Graphics gfx) {
-				final Graphics2D g = (Graphics2D) gfx.create();
-				g.setColor(bgs[curBg]);
-				final Dimension dim = jFrame.getSize();
-				g.fill(new Rectangle2D.Double(0, 0, dim.getWidth(), dim
-						.getHeight()));
-				g.setColor(Color.BLACK);
-				shapeDrawer.draw(g, shape);
-				if (showBBox) {
-					g.setColor(new Color(0x80ff80ff, true));
-					g.fill(shapeDrawer.getBounds(shape));
-				}
-				g.dispose();
-			}
+      @Override
+      protected void paintComponent(final Graphics gfx) {
+        final Graphics2D g = (Graphics2D) gfx.create();
+        g.setColor(bgs[curBg]);
+        final Dimension dim = jFrame.getSize();
+        g.fill(new Rectangle2D.Double(0, 0, dim.getWidth(), dim
+            .getHeight()));
+        g.setColor(Color.BLACK);
+        shapeDrawer.draw(g, shape);
+        if(showBBox) {
+          g.setColor(new Color(0x80ff80ff, true));
+          g.fill(shapeDrawer.getBounds(shape));
+        }
+        g.dispose();
+      }
 
-		});
-		jFrame.addMouseListener(new MouseAdapter() {
+    });
+    jFrame.addMouseListener(new MouseAdapter() {
 
-			@Override
-			public void mouseClicked(final MouseEvent e) {
-				switch (e.getButton()) {
-				case MouseEvent.BUTTON1:
-					++curPen;
-					if (curPen >= pens.length) {
-						curPen = 0;
-					}
-					setPen();
-					break;
-				case MouseEvent.BUTTON2: {
-					showBBox = !showBBox;
-					break;
-				}
-				case MouseEvent.BUTTON3:
-					++curBg;
-					if (curBg >= bgs.length) {
-						curBg = 0;
-					}
-					jFrame.setBackground(bgs[curBg]);
-					break;
-				}
-				jFrame.repaint();
-			}
+      @Override
+      public void mouseClicked(final MouseEvent e) {
+        switch(e.getButton()) {
+          case MouseEvent.BUTTON1:
+            ++curPen;
+            if(curPen >= pens.length) {
+              curPen = 0;
+            }
+            setPen();
+            break;
+          case MouseEvent.BUTTON2: {
+            showBBox = !showBBox;
+            break;
+          }
+          case MouseEvent.BUTTON3:
+            ++curBg;
+            if(curBg >= bgs.length) {
+              curBg = 0;
+            }
+            jFrame.setBackground(bgs[curBg]);
+            break;
+        }
+        jFrame.repaint();
+      }
 
-		});
-		jFrame.setSize(new Dimension(800, 600));
-		jFrame.setLocationRelativeTo(null);
-		jFrame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-		jFrame.setVisible(true);
-	}
+    });
+    jFrame.setSize(new Dimension(800, 600));
+    jFrame.setLocationRelativeTo(null);
+    jFrame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+    jFrame.setVisible(true);
+  }
 
-	private static Shape createShape() {
-		final GeneralPath path = new GeneralPath();
-		path.moveTo(100.0, 100.0);
-		path.lineTo(150.0, 200.0);
-		path.quadTo(250.0, 250.0, 300.0, 150.0);
-		path.curveTo(400.0, 80.0, 450.0, 160.0, 500.0, 400.0);
-		path.moveTo(600.0, 300.0);
-		path.quadTo(650.0, 250.0, 700.0, 300.0);
-		path.quadTo(700.0, 350.0, 650.0, 350.0);
-		path.closePath();
-		path.moveTo(200.0, 350.0);
-		path.quadTo(200.0, 300.0, 250.0, 300.0);
-		path.quadTo(300.0, 300.0, 300.0, 350.0);
-		path.quadTo(300.0, 400.0, 250.0, 400.0);
-		path.quadTo(200.0, 400.0, 200.0, 350.0);
-		return path;
-	}
+  /**
+   * Creates the test shape.
+   * 
+   * @return The shape.
+   */
+  private static Shape createShape() {
+    final GeneralPath path = new GeneralPath();
+    path.moveTo(100.0, 100.0);
+    path.lineTo(150.0, 200.0);
+    path.quadTo(250.0, 250.0, 300.0, 150.0);
+    path.curveTo(400.0, 80.0, 450.0, 160.0, 500.0, 400.0);
+    path.moveTo(600.0, 300.0);
+    path.quadTo(650.0, 250.0, 700.0, 300.0);
+    path.quadTo(700.0, 350.0, 650.0, 350.0);
+    path.closePath();
+    path.moveTo(200.0, 350.0);
+    path.quadTo(200.0, 300.0, 250.0, 300.0);
+    path.quadTo(300.0, 300.0, 300.0, 350.0);
+    path.quadTo(300.0, 400.0, 250.0, 400.0);
+    path.quadTo(200.0, 400.0, 200.0, 350.0);
+    return path;
+  }
 
 }
