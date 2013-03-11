@@ -149,6 +149,7 @@ public final class PenShapeDrawer extends AbstractShapeDrawer {
      */
     private double getOrientation() {
       if(dx == 0.0) return Math.PI * (dy > 0.0 ? 0.5 : 1.5);
+      // TODO FIXME possible bottle-neck
       return (dx < 0 ? Math.PI : 0) + Math.atan(dy / dx);
     }
 
