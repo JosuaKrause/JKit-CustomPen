@@ -6,6 +6,7 @@ import java.awt.Shape;
 import java.awt.geom.Rectangle2D;
 
 import jkit.gfx.AbstractShapeDrawer;
+import jkit.gfx.Drawable;
 
 /**
  * A decorator pen for adding a snow effect.
@@ -125,14 +126,16 @@ public class SnowPen extends DecoratorPen {
 
   @Override
   public void prepare(final Graphics2D g, final Shape s) {
-    origin.draw(g, s);
+    final Drawable o = origin.getDrawable(s);
+    o.draw(g);
     g.translate(0.0, -getThickness() * 2.0 / 3.0);
     crayon.prepare(g, s);
   }
 
   @Override
   public Rectangle2D getSpecialBounds(final Shape s) {
-    return origin.getBounds(s);
+    final Drawable o = origin.getDrawable(s);
+    return o.getBounds();
   }
 
   /** The standard maximal slope. */
