@@ -2,7 +2,6 @@ package jkit.gfx;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
-import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Shape;
 import java.awt.Stroke;
@@ -54,18 +53,29 @@ public class EasyVisibleShapeDrawer extends AbstractShapeDrawer {
   }
 
   @Override
-  public void draw(final Graphics gfx, final Shape outline) {
-    final Graphics2D g = (Graphics2D) gfx.create();
-    g.setColor(bg);
-    g.fill(outer.createStrokedShape(outline));
-    g.setColor(fg);
-    g.fill(inner.createStrokedShape(outline));
-    g.dispose();
-  }
+  public Drawable getDrawable(final Shape s) {
+    final Color fg = this.fg;
+    final Color bg = this.bg;
+    final Shape outerShape = outer.createStrokedShape(s);
+    final Shape innerShape = inner.createStrokedShape(s);
+    final Rectangle2D box = outerShape.getBounds2D();
+    return new Drawable() {
 
-  @Override
-  public Rectangle2D getBounds(final Shape s) {
-    return outer.createStrokedShape(s).getBounds2D();
-  }
+      @Override
+      public void draw(final Graphics2D gfx) {
+        final Graphics2D g = (Graphics2D) gfx.create();
+        g.setColor(bg);
+        g.fill(outerShape);
+        g.setColor(fg);
+        g.fill(innerShape);
+        g.dispose();
+      }
 
+      @Override
+      protected Rectangle2D computeBounds() {
+        return box;
+      }
+
+    };
+  }
 }

@@ -16,6 +16,7 @@ import javax.swing.JFrame;
 import javax.swing.WindowConstants;
 
 import jkit.gfx.AbstractShapeDrawer;
+import jkit.gfx.Drawable;
 import jkit.gfx.EasyVisibleShapeDrawer;
 import jkit.gfx.SimpleShapeDrawer;
 import jkit.gfx.pen.ArrowPen;
@@ -118,10 +119,11 @@ public class Test {
         g.fill(new Rectangle2D.Double(0, 0, dim.getWidth(), dim
             .getHeight()));
         g.setColor(Color.BLACK);
-        shapeDrawer.draw(g, shape);
+        final Drawable drawable = shapeDrawer.getDrawable(shape);
+        drawable.draw(g);
         if(showBBox) {
           g.setColor(new Color(0x80ff80ff, true));
-          g.fill(shapeDrawer.getBounds(shape));
+          g.fill(drawable.getBounds());
         }
         g.dispose();
       }

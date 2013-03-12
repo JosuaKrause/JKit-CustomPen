@@ -8,6 +8,8 @@ import java.awt.geom.AffineTransform;
 import java.awt.geom.PathIterator;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
+import java.util.ArrayList;
+import java.util.List;
 
 import jkit.gfx.pen.Pen;
 
@@ -41,9 +43,6 @@ public final class PenShapeDrawer extends AbstractShapeDrawer {
    * @author Joschi <josua.krause@gmail.com>
    */
   private final class Segment {
-
-    /** The array to hold the coordinates. */
-    private final double[] coords = new double[6];
 
     /** The segment type. */
     private final int segmentType;
@@ -83,14 +82,15 @@ public final class PenShapeDrawer extends AbstractShapeDrawer {
      * 
      * @param pi The path iterator.
      * @param cmt The current position of the last move-to segment.
+     * @param coords The array suitable to hold the coordinates.
      */
-    public Segment(final PathIterator pi, final Point2D cmt) {
+    public Segment(final PathIterator pi, final Point2D cmt, final double[] coords) {
       curMoveTo = cmt;
       segmentType = pi.currentSegment(coords);
       isMove = segmentType == PathIterator.SEG_MOVETO;
       switch(segmentType) {
         case PathIterator.SEG_MOVETO:
-          cur = create(0);
+          cur = create(coords, 0);
           curMoveTo = cur;
           break;
         case PathIterator.SEG_CLOSE:
@@ -98,13 +98,15 @@ public final class PenShapeDrawer extends AbstractShapeDrawer {
           curMoveTo = null;
           break;
         case PathIterator.SEG_LINETO:
-          cur = create(0);
+          cur = create(coords, 0);
           break;
         case PathIterator.SEG_QUADTO:
-          cur = create(2);
+          // will not be used since we have a flattened path iterator
+          cur = create(coords, 2);
           break;
         case PathIterator.SEG_CUBICTO:
-          cur = create(4);
+          // will not be used since we have a flattened path iterator
+          cur = create(coords, 4);
           break;
         default:
           throw new InternalError();
@@ -131,7 +133,17 @@ public final class PenShapeDrawer extends AbstractShapeDrawer {
       } else {
         isFirst = true;
       }
+      invalidate();
     }
+
+    /** Invalidates the cache. */
+    private void invalidate() {
+      rot = Double.NaN;
+      len = Double.NaN;
+    }
+
+    /** The cached length. */
+    private double len = Double.NaN;
 
     /**
      * Getter
@@ -139,7 +151,29 @@ public final class PenShapeDrawer extends AbstractShapeDrawer {
      * @return The length of this segment.
      */
     private double getLength() {
-      return Math.sqrt(dx * dx + dy * dy);
+      if(Double.isNaN(len)) {
+        len = Math.sqrt(dx * dx + dy * dy);
+      }
+      return len;
+    }
+
+    /** A quarter pi. */
+    public static final double M_PI_4 = Math.PI / 4.0;
+
+    /**
+     * A fast implementation of {@link Math#atan(double)}. The maximum error is
+     * <code>0.0015</code> radians. The behavior is the same as the library
+     * function. The algorithm comes from:
+     * <em>"Efficient approximations for the arctangent function",
+     * Rajan, S. Sichun Wang Inkol, R. Joyal, A., May 2006</em>
+     * 
+     * @param a The value whose arc tangent is to be returned.
+     * @return The arc tangent of the argument.
+     * @see Math#atan(double)
+     */
+    private double fastArcTan(final double a) {
+      if(a < -1 || a > 1) return Math.atan(a);
+      return M_PI_4 * a - a * (Math.abs(a) - 1) * (0.2447 + 0.0663 * Math.abs(a));
     }
 
     /**
@@ -148,9 +182,16 @@ public final class PenShapeDrawer extends AbstractShapeDrawer {
      * @return The orientation of this segment.
      */
     private double getOrientation() {
-      if(dx == 0.0) return Math.PI * (dy > 0.0 ? 0.5 : 1.5);
-      // TODO FIXME possible bottle-neck
-      return (dx < 0 ? Math.PI : 0) + Math.atan(dy / dx);
+      if(Double.isNaN(rot)) {
+        final double rot;
+        if(dx == 0.0) {
+          rot = Math.PI * (dy > 0.0 ? 0.5 : 1.5);
+        } else {
+          rot = (dx < 0 ? Math.PI : 0) + fastArcTan(dy / dx);
+        }
+        this.rot = rot;
+      }
+      return rot;
     }
 
     /**
@@ -174,12 +215,16 @@ public final class PenShapeDrawer extends AbstractShapeDrawer {
     /**
      * Getter.
      * 
+     * @param coords The array holding the coordinates.
      * @param pos The position in the coordinates array.
      * @return The position specified by the coordinates array.
      */
-    private Point2D create(final int pos) {
+    private Point2D create(final double[] coords, final int pos) {
       return new Point2D.Double(coords[pos], coords[pos + 1]);
     }
+
+    /** The cached value for the rotation. */
+    private double rot = Double.NaN;
 
     /**
      * Draws the current segment.
@@ -192,10 +237,8 @@ public final class PenShapeDrawer extends AbstractShapeDrawer {
     public int drawCurrentSegment(final Graphics2D gfx, final int no) {
       if(dx == 0.0 && dy == 0.0) return no;
       final Graphics2D seg = (Graphics2D) gfx.create();
-      final AffineTransform at = AffineTransform.getTranslateInstance(x, y);
-      final double rot = getOrientation();
-      at.rotate(rot);
-      seg.transform(at);
+      seg.translate(x, y);
+      seg.rotate(getOrientation());
       final int newNo = drawSeg(seg, getLength(), rot, no);
       seg.dispose();
       return newNo;
@@ -333,27 +376,54 @@ public final class PenShapeDrawer extends AbstractShapeDrawer {
   }
 
   @Override
-  public void draw(final Graphics gfx, final Shape outline) {
-    int no = 0;
-    final Graphics2D g = (Graphics2D) gfx.create();
-    pen.prepare(g, outline);
-    final PathIterator pi = outline.getPathIterator(null, Math.sqrt(segLen));
-    Point2D curMoveTo = null;
-    Segment last = null;
-    Segment cur = null;
-    while(!pi.isDone()) {
-      cur = new Segment(pi, curMoveTo);
-      cur.setLast(last);
-      no = drawIfNotNull(g, last, no);
-      curMoveTo = cur.getCurMoveTo();
-      last = cur;
-      pi.next();
+  public Drawable getDrawable(final Shape outline) {
+    final List<Segment> list = new ArrayList<>();
+    { // prevents using those variables in the draw-able
+      final PathIterator pi = outline.getPathIterator(null, Math.sqrt(segLen));
+      final double[] coords = new double[6];
+      Point2D curMoveTo = null;
+      Segment last = null;
+      Segment cur = null;
+      while(!pi.isDone()) {
+        cur = new Segment(pi, curMoveTo, coords);
+        cur.setLast(last);
+        list.add(last);
+        curMoveTo = cur.getCurMoveTo();
+        last = cur;
+        pi.next();
+      }
+      if(cur != null) {
+        cur.setIsLast(true);
+      }
+      list.add(cur);
     }
-    if(cur != null) {
-      cur.setIsLast(true);
-    }
-    drawIfNotNull(g, cur, no);
-    g.dispose();
+    return new Drawable() {
+
+      @Override
+      public void draw(final Graphics2D gfx) {
+        int no = 0;
+        final Graphics2D g = (Graphics2D) gfx.create();
+        pen.prepare(g, outline);
+        for(final Segment s : list) {
+          no = drawIfNotNull(g, s, no);
+        }
+        g.dispose();
+      }
+
+      @Override
+      protected Rectangle2D computeBounds() {
+        final Rectangle2D r = new Rectangle2D.Double();
+        final Shape sb = pen.getSpecialBounds(outline);
+        if(sb != null) {
+          unite(r, sb);
+        }
+        for(final Segment s : list) {
+          bboxIfNotNull(r, s);
+        }
+        return r;
+      }
+
+    };
   }
 
   /**
@@ -399,32 +469,6 @@ public final class PenShapeDrawer extends AbstractShapeDrawer {
   @Override
   public void setColor(final Color color) {
     pen.setColor(color);
-  }
-
-  @Override
-  public Rectangle2D getBounds(final Shape s) {
-    final Rectangle2D r = new Rectangle2D.Double();
-    final Shape sb = pen.getSpecialBounds(s);
-    if(sb != null) {
-      unite(r, sb);
-    }
-    final PathIterator pi = s.getPathIterator(null, Math.sqrt(segLen));
-    Point2D curMoveTo = null;
-    Segment last = null;
-    Segment cur = null;
-    while(!pi.isDone()) {
-      cur = new Segment(pi, curMoveTo);
-      cur.setLast(last);
-      bboxIfNotNull(r, last);
-      curMoveTo = cur.getCurMoveTo();
-      last = cur;
-      pi.next();
-    }
-    if(cur != null) {
-      cur.setIsLast(true);
-    }
-    bboxIfNotNull(r, cur);
-    return r;
   }
 
 }
