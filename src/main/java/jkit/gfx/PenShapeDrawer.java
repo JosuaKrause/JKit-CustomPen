@@ -267,7 +267,8 @@ public final class PenShapeDrawer extends AbstractShapeDrawer {
      * @return Whether this segment needs to be drawn.
      */
     private boolean mustDraw(final Graphics2D g, final int type, final double rot) {
-      return g.getClip().intersects(pen.getBoundingBox(type, rot));
+      final Shape clip = g.getClip();
+      return clip == null || clip.intersects(pen.getBoundingBox(type, rot));
     }
 
     /**
