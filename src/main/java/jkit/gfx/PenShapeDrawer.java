@@ -54,28 +54,28 @@ public final class PenShapeDrawer extends AbstractShapeDrawer {
     private final boolean isMove;
 
     /** Whether this segment is a first segment of a line. */
-    private boolean isFirst;
+    private final boolean isFirst;
 
     /** Whether this segment is a last segment of a line. */
     private boolean isLast;
 
     /** The previous position. */
-    private Point2D last;
+    private final Point2D last;
 
     /** The current position of the last move-to segment. */
-    private Point2D curMoveTo;
+    private final Point2D curMoveTo;
 
     /** The starting x position. */
-    private double x;
+    private final double x;
 
     /** The starting y position. */
-    private double y;
+    private final double y;
 
     /** The distance moved in x direction by this segment. */
-    private double dx;
+    private final double dx;
 
     /** The distance moved in y direction by this segment. */
-    private double dy;
+    private final double dy;
 
     /**
      * Creates a segment.
@@ -83,9 +83,10 @@ public final class PenShapeDrawer extends AbstractShapeDrawer {
      * @param pi The path iterator.
      * @param cmt The current position of the last move-to segment.
      * @param coords The array suitable to hold the coordinates.
+     * @param lastSeg The previous segment.
      */
-    public Segment(final PathIterator pi, final Point2D cmt, final double[] coords) {
-      curMoveTo = cmt;
+    public Segment(final PathIterator pi, final Point2D cmt,
+        final double[] coords, final Segment lastSeg) {
       segmentType = pi.currentSegment(coords);
       isMove = segmentType == PathIterator.SEG_MOVETO;
       switch(segmentType) {
@@ -94,36 +95,33 @@ public final class PenShapeDrawer extends AbstractShapeDrawer {
           curMoveTo = cur;
           break;
         case PathIterator.SEG_CLOSE:
-          cur = curMoveTo;
+          cur = cmt;
           curMoveTo = null;
           break;
         case PathIterator.SEG_LINETO:
           cur = create(coords, 0);
+          curMoveTo = cmt;
           break;
         case PathIterator.SEG_QUADTO:
           // will not be used since we have a flattened path iterator
           cur = create(coords, 2);
+          curMoveTo = cmt;
           break;
         case PathIterator.SEG_CUBICTO:
           // will not be used since we have a flattened path iterator
           cur = create(coords, 4);
+          curMoveTo = cmt;
           break;
         default:
           throw new InternalError();
       }
-    }
-
-    /**
-     * Sets the previous segment and initializes corresponding values.
-     * 
-     * @param lastSeg The previous segment.
-     */
-    public void setLast(final Segment lastSeg) {
+      // set last
       last = lastSeg != null ? lastSeg.cur : null;
       if(last != null) {
-        isFirst = isFirst || lastSeg.isMove;
+        isFirst = lastSeg.isMove;
         if(isMove) {
           lastSeg.isLast = true;
+          dx = dy = x = y = Double.NaN;
         } else {
           x = last.getX();
           y = last.getY();
@@ -132,18 +130,30 @@ public final class PenShapeDrawer extends AbstractShapeDrawer {
         }
       } else {
         isFirst = true;
+        dx = dy = x = y = Double.NaN;
       }
-      invalidate();
+      // compute len
+      if(!Double.isNaN(dx)) {
+        len = Math.sqrt(dx * dx + dy * dy);
+      } else {
+        len = Double.NaN;
+      }
+      // compute rot
+      final double rot;
+      if(!Double.isNaN(dx)) {
+        if(dx == 0.0) {
+          rot = Math.PI * (dy > 0.0 ? 0.5 : 1.5);
+        } else {
+          rot = (dx < 0 ? Math.PI : 0) + fastArcTan(dy / dx);
+        }
+      } else {
+        rot = Double.NaN;
+      }
+      this.rot = rot;
     }
 
-    /** Invalidates the cache. */
-    private void invalidate() {
-      rot = Double.NaN;
-      len = Double.NaN;
-    }
-
-    /** The cached length. */
-    private double len = Double.NaN;
+    /** The length. */
+    private final double len;
 
     /**
      * Getter
@@ -151,9 +161,6 @@ public final class PenShapeDrawer extends AbstractShapeDrawer {
      * @return The length of this segment.
      */
     private double getLength() {
-      if(Double.isNaN(len)) {
-        len = Math.sqrt(dx * dx + dy * dy);
-      }
       return len;
     }
 
@@ -182,15 +189,6 @@ public final class PenShapeDrawer extends AbstractShapeDrawer {
      * @return The orientation of this segment.
      */
     private double getOrientation() {
-      if(Double.isNaN(rot)) {
-        final double rot;
-        if(dx == 0.0) {
-          rot = Math.PI * (dy > 0.0 ? 0.5 : 1.5);
-        } else {
-          rot = (dx < 0 ? Math.PI : 0) + fastArcTan(dy / dx);
-        }
-        this.rot = rot;
-      }
       return rot;
     }
 
@@ -223,8 +221,8 @@ public final class PenShapeDrawer extends AbstractShapeDrawer {
       return new Point2D.Double(coords[pos], coords[pos + 1]);
     }
 
-    /** The cached value for the rotation. */
-    private double rot = Double.NaN;
+    /** The value for the rotation. */
+    private final double rot;
 
     /**
      * Draws the current segment.
@@ -386,8 +384,7 @@ public final class PenShapeDrawer extends AbstractShapeDrawer {
       Segment last = null;
       Segment cur = null;
       while(!pi.isDone()) {
-        cur = new Segment(pi, curMoveTo, coords);
-        cur.setLast(last);
+        cur = new Segment(pi, curMoveTo, coords, last);
         list.add(last);
         curMoveTo = cur.getCurMoveTo();
         last = cur;
