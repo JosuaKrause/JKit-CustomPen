@@ -44,9 +44,6 @@ public final class PenShapeDrawer extends AbstractShapeDrawer {
    */
   private final class Segment {
 
-    /** The segment type. */
-    private final int segmentType;
-
     /** The current position. */
     private final Point2D cur;
 
@@ -56,26 +53,20 @@ public final class PenShapeDrawer extends AbstractShapeDrawer {
     /** Whether this segment is a first segment of a line. */
     private final boolean isFirst;
 
-    /** Whether this segment is a last segment of a line. */
-    private boolean isLast;
-
     /** The previous position. */
     private final Point2D last;
 
     /** The current position of the last move-to segment. */
     private final Point2D curMoveTo;
 
-    /** The starting x position. */
-    private final double x;
+    /** The affine transform of this segment. */
+    private final AffineTransform at;
 
-    /** The starting y position. */
-    private final double y;
+    /** Whether this segment is a no-op. */
+    private final boolean isNop;
 
-    /** The distance moved in x direction by this segment. */
-    private final double dx;
-
-    /** The distance moved in y direction by this segment. */
-    private final double dy;
+    /** Whether this segment is a last segment of a line. */
+    private boolean isLast;
 
     /**
      * Creates a segment.
@@ -87,7 +78,7 @@ public final class PenShapeDrawer extends AbstractShapeDrawer {
      */
     public Segment(final PathIterator pi, final Point2D cmt,
         final double[] coords, final Segment lastSeg) {
-      segmentType = pi.currentSegment(coords);
+      final int segmentType = pi.currentSegment(coords);
       isMove = segmentType == PathIterator.SEG_MOVETO;
       switch(segmentType) {
         case PathIterator.SEG_MOVETO:
@@ -116,31 +107,37 @@ public final class PenShapeDrawer extends AbstractShapeDrawer {
           throw new InternalError();
       }
       // set last
+      final boolean valid;
+      final double x, y, dx, dy;
       last = lastSeg != null ? lastSeg.cur : null;
       if(last != null) {
         isFirst = lastSeg.isMove;
         if(isMove) {
           lastSeg.isLast = true;
           dx = dy = x = y = Double.NaN;
+          valid = false;
         } else {
           x = last.getX();
           y = last.getY();
           dx = cur.getX() - x;
           dy = cur.getY() - y;
+          valid = true;
         }
       } else {
         isFirst = true;
         dx = dy = x = y = Double.NaN;
+        valid = false;
       }
+      isNop = dx == 0.0 && dy == 0.0;
       // compute len
-      if(!Double.isNaN(dx)) {
+      if(valid) {
         len = Math.sqrt(dx * dx + dy * dy);
       } else {
         len = Double.NaN;
       }
       // compute rot
       final double rot;
-      if(!Double.isNaN(dx)) {
+      if(valid) {
         if(dx == 0.0) {
           rot = Math.PI * (dy > 0.0 ? 0.5 : 1.5);
         } else {
@@ -150,19 +147,17 @@ public final class PenShapeDrawer extends AbstractShapeDrawer {
         rot = Double.NaN;
       }
       this.rot = rot;
+      // compute affine transformation
+      if(valid && !isNop) {
+        at = AffineTransform.getTranslateInstance(x, y);
+        at.rotate(rot);
+      } else {
+        at = null;
+      }
     }
 
     /** The length. */
     private final double len;
-
-    /**
-     * Getter
-     * 
-     * @return The length of this segment.
-     */
-    private double getLength() {
-      return len;
-    }
 
     /** A quarter pi. */
     public static final double M_PI_4 = Math.PI / 4.0;
@@ -181,15 +176,6 @@ public final class PenShapeDrawer extends AbstractShapeDrawer {
     private double fastArcTan(final double a) {
       if(a < -1 || a > 1) return Math.atan(a);
       return M_PI_4 * a - a * (Math.abs(a) - 1) * (0.2447 + 0.0663 * Math.abs(a));
-    }
-
-    /**
-     * Getter.
-     * 
-     * @return The orientation of this segment.
-     */
-    private double getOrientation() {
-      return rot;
     }
 
     /**
@@ -233,11 +219,10 @@ public final class PenShapeDrawer extends AbstractShapeDrawer {
      *         <code>no</code> when nothing was drawn.
      */
     public int drawCurrentSegment(final Graphics2D gfx, final int no) {
-      if(dx == 0.0 && dy == 0.0) return no;
+      if(isNop) return no;
       final Graphics2D seg = (Graphics2D) gfx.create();
-      seg.translate(x, y);
-      seg.rotate(getOrientation());
-      final int newNo = drawSeg(seg, getLength(), rot, no);
+      seg.transform(at);
+      final int newNo = drawSeg(seg, len, rot, no);
       seg.dispose();
       return newNo;
     }
@@ -248,11 +233,8 @@ public final class PenShapeDrawer extends AbstractShapeDrawer {
      * @param r The rectangle.
      */
     public void bboxCurrentSegment(final Rectangle2D r) {
-      if(dx == 0.0 && dy == 0.0) return;
-      final AffineTransform at = AffineTransform.getTranslateInstance(x, y);
-      final double rot = getOrientation();
-      at.rotate(rot);
-      bbox(r, at, getLength(), rot);
+      if(isNop) return;
+      bbox(r, new AffineTransform(at), len, rot);
     }
 
     /**
