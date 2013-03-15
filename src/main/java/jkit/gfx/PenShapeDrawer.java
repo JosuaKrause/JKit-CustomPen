@@ -359,24 +359,7 @@ public final class PenShapeDrawer extends AbstractShapeDrawer {
   @Override
   public Drawable getDrawable(final Shape outline) {
     final List<Segment> list = new ArrayList<>();
-    { // prevents using those variables in the draw-able
-      final PathIterator pi = outline.getPathIterator(null, Math.sqrt(segLen));
-      final double[] coords = new double[6];
-      Point2D curMoveTo = null;
-      Segment last = null;
-      Segment cur = null;
-      while(!pi.isDone()) {
-        cur = new Segment(pi, curMoveTo, coords, last);
-        list.add(last);
-        curMoveTo = cur.getCurMoveTo();
-        last = cur;
-        pi.next();
-      }
-      if(cur != null) {
-        cur.setIsLast(true);
-      }
-      list.add(cur);
-    }
+    createSegments(outline, list);
     return new Drawable() {
 
       @Override
@@ -404,6 +387,31 @@ public final class PenShapeDrawer extends AbstractShapeDrawer {
       }
 
     };
+  }
+
+  /**
+   * Creates segments from the given shape and puts them into the list.
+   * 
+   * @param outline The outline.
+   * @param list The list.
+   */
+  private void createSegments(final Shape outline, final List<Segment> list) {
+    final PathIterator pi = outline.getPathIterator(null, Math.sqrt(segLen));
+    final double[] coords = new double[6];
+    Point2D curMoveTo = null;
+    Segment last = null;
+    Segment cur = null;
+    while(!pi.isDone()) {
+      cur = new Segment(pi, curMoveTo, coords, last);
+      list.add(last);
+      curMoveTo = cur.getCurMoveTo();
+      last = cur;
+      pi.next();
+    }
+    if(cur != null) {
+      cur.setIsLast(true);
+    }
+    list.add(cur);
   }
 
   /**
