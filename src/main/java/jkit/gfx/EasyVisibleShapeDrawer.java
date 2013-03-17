@@ -34,17 +34,17 @@ public class EasyVisibleShapeDrawer extends AbstractShapeDrawer {
   /**
    * Creates a shape drawer.
    * 
-   * @param fg The front color.
-   * @param bg The back color.
+   * @param inner The inner color.
+   * @param outer The outer color.
    * @param radius The radius of the inner line.
    * @param outerRadius The radius of the outer line.
    */
-  public EasyVisibleShapeDrawer(final Color fg, final Color bg,
+  public EasyVisibleShapeDrawer(final Color inner, final Color outer,
       final double radius, final double outerRadius) {
-    inner = new BasicStroke((float) radius);
-    outer = new BasicStroke((float) (radius + outerRadius + 1));
-    this.fg = fg;
-    this.bg = bg;
+    this.inner = new BasicStroke((float) radius);
+    this.outer = new BasicStroke((float) (radius + outerRadius + 1));
+    fg = inner;
+    bg = outer;
   }
 
   @Override
