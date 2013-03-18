@@ -16,8 +16,10 @@ to draw shapes instead of `java.awt.Graphics2D#draw(java.awt.Shape)`.
 may be converted to
 
     Graphics2D g = ...;
+    Rectangle2D vis = ...; // visible rectangle in transformed space - (optional)
     AbstractShapeDrawer shapeDrawer = AbstractShapeDrawer.getShapeDrawerForPen(...);
-    shapeDrawer.draw(g, shape);
+    Drawable d = shapeDrawer.getDrawable(shape);
+    d.drawIfVisible(g, vis);
 
 In the package `jkit.example` is an example that shows
 how to use various custom pens.

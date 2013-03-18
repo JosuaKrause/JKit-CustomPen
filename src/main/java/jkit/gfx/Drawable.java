@@ -44,10 +44,12 @@ public abstract class Drawable {
    * Draws to the given graphics context if the {@link Drawable} is visible.
    * 
    * @param gfx The graphics context.
-   * @param viewport The current viewport of the graphics context.
+   * @param viewport The current viewport of the graphics context. The viewport
+   *          may be <code>null</code>, however then the {@link Drawable} is
+   *          always drawn.
    */
   public void drawIfVisible(final Graphics2D gfx, final Rectangle2D viewport) {
-    if(!viewport.intersects(getBounds())) return;
+    if(viewport != null && !viewport.intersects(getBounds())) return;
     draw(gfx);
   }
 
