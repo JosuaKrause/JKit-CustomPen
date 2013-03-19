@@ -28,7 +28,7 @@ public class EasyVisibleShapeDrawer extends AbstractShapeDrawer {
 
   /** Creates a black and white shape drawer. */
   public EasyVisibleShapeDrawer() {
-    this(Color.WHITE, Color.BLACK, 1, 1);
+    this(Color.WHITE, Color.BLACK, 1, 1, new BasicStroke());
   }
 
   /**
@@ -38,11 +38,15 @@ public class EasyVisibleShapeDrawer extends AbstractShapeDrawer {
    * @param outer The outer color.
    * @param radius The radius of the inner line.
    * @param outerRadius The radius of the outer line.
+   * @param base The base stroke.
    */
   public EasyVisibleShapeDrawer(final Color inner, final Color outer,
-      final double radius, final double outerRadius) {
-    this.inner = new BasicStroke((float) radius);
-    this.outer = new BasicStroke((float) (radius + outerRadius + 1));
+      final double radius, final double outerRadius, final BasicStroke base) {
+    this.inner = new BasicStroke((float) radius, base.getEndCap(), base.getLineJoin(),
+        base.getMiterLimit(), base.getDashArray(), base.getDashPhase());
+    this.outer = new BasicStroke((float) (radius + outerRadius + 1), base.getEndCap(),
+        base.getLineJoin(), base.getMiterLimit(), base.getDashArray(),
+        base.getDashPhase());
     fg = inner;
     bg = outer;
   }
