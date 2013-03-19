@@ -4,7 +4,7 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Shape;
 import java.awt.geom.AffineTransform;
-import java.awt.geom.GeneralPath;
+import java.awt.geom.Path2D;
 import java.awt.geom.Rectangle2D;
 
 /**
@@ -53,7 +53,7 @@ public class FacingTrianglePen extends SimplePen {
    * @return The shape.
    */
   private static Shape createTriangleFor(final double width) {
-    final GeneralPath path = new GeneralPath();
+    final Path2D path = new Path2D.Double();
     path.moveTo(0.0, 0.0);
     path.lineTo(width, 0.0);
     path.lineTo(width * 0.5, width * 0.5);

@@ -8,7 +8,7 @@ import java.awt.Graphics2D;
 import java.awt.Shape;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.geom.GeneralPath;
+import java.awt.geom.Path2D;
 import java.awt.geom.Rectangle2D;
 
 import javax.swing.JComponent;
@@ -169,7 +169,7 @@ public class Test {
    * @return The shape.
    */
   private static Shape createShape() {
-    final GeneralPath path = new GeneralPath();
+    final Path2D path = new Path2D.Double();
     path.moveTo(100.0, 100.0);
     path.lineTo(150.0, 200.0);
     path.quadTo(250.0, 250.0, 300.0, 150.0);
