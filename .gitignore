@@ -2,3 +2,4 @@ bin/
 /.sonar/
 /sonar-project.properties
 /target/
+/.DS_Store
