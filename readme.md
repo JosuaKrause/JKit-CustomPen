@@ -5,7 +5,7 @@ A small library to use custom defined pens to draw Java-Shapes.
 
 This project is build with Maven. Use `mvn install` to generate it as a jar
 in the *target/* directory. Alternatively the project can be used as dependency
-in other Maven projects (see [below] (#maven-integration)).
+in other Maven projects (see [below](#maven-integration)).
 
 To use custom shape drawing an instance of `jkit.gfx.AbstractShapeDrawer` has to be used
 to draw shapes instead of `java.awt.Graphics2D#draw(java.awt.Shape)`.
@@ -40,9 +40,9 @@ However, this requires an additional repository in the repositories section (`<r
 
     <repository>
       <id>joschi</id>
-      <url>http://merkur57.inf.uni-konstanz.de/~krause/mvn/releases</url>
+      <url>https://www.josuakrause.com/mvn-repo/releases</url>
     </repository>
 
-When using [Eclipse] (http://www.eclipse.org/) the current snapshot can be used
+When using [Eclipse](http://www.eclipse.org/) the current snapshot can be used
 by having the JKit-CustomPen project open and altering the version of the dependency
 to *X.X.X-SNAPSHOT* where *X.X.X* is the upcoming version.
